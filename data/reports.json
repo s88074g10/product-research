@@ -1,0 +1,16 @@
+{
+  "reports": [
+    {
+      "slug": "hp-elitebook-8",
+      "title": "HP EliteBook 8 G1i 14 研究報告",
+      "brand": "HP",
+      "category": "商用筆電",
+      "model": "EliteBook 8 G1i 14",
+      "summary": "HP 商用筆電旗艦系列 EliteBook 8 G1i 14 的規格、定位、市場分析與門市銷售要點整理。",
+      "tags": ["商用", "Intel", "14吋", "AI PC"],
+      "publishedAt": "2026-04-24",
+      "updatedAt": "2026-04-24",
+      "url": "research/hp-elitebook-8.html"
+    }
+  ]
+}

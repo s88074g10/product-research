@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>產品研究 — 華克電腦</title>
+<meta name="description" content="華克電腦產品研究中心 — 商用筆電、AI PC、高效能機種的深度評測與選購指南。">
+<meta property="og:title" content="產品研究 — 華克電腦">
+<meta property="og:description" content="華克電腦產品研究中心 — 商用筆電、AI PC、高效能機種的深度評測與選購指南。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand-mark">VOC Research</div>
+  <h1>產品研究中心</h1>
+  <p class="tagline">華克電腦原廠合作研究團隊整理的筆電、AI PC、商用機種深度評測與選購指南</p>
+</header>
+
+<main>
+  <div class="toolbar">
+    <input type="search" id="searchInput" placeholder="搜尋型號、品牌、關鍵字…" aria-label="搜尋">
+    <div class="filter-group" id="brandFilters">
+      <button class="filter-btn active" data-brand="all">全部品牌</button>
+    </div>
+  </div>
+
+  <div id="reportGrid" class="report-grid"></div>
+
+  <div id="emptyState" class="empty-state" style="display:none;">
+    <h2>找不到符合條件的報告</h2>
+    <p>試試其他關鍵字或清除篩選</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; 華克電腦 VOC Computer · <a href="https://www.voccomputer.com.tw">官方網站</a></p>
+  <p style="margin-top:6px; font-size:12px;">資料來源：原廠規格書、實機測試、市場資訊整理</p>
+</footer>
+
+<script>
+let allReports = [];
+let activeFilter = 'all';
+let searchTerm = '';
+
+async function loadReports() {
+  try {
+    const res = await fetch('data/reports.json');
+    const data = await res.json();
+    allReports = data.reports.sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
+    buildBrandFilters();
+    render();
+  } catch (e) {
+    console.error('載入報告失敗', e);
+    document.getElementById('reportGrid').innerHTML = '<p style="color:#999;">載入報告列表失敗，請稍後再試。</p>';
+  }
+}
+
+function buildBrandFilters() {
+  const brands = [...new Set(allReports.map(r => r.brand).filter(Boolean))].sort();
+  const container = document.getElementById('brandFilters');
+  brands.forEach(brand => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.brand = brand;
+    btn.textContent = brand;
+    container.appendChild(btn);
+  });
+  container.addEventListener('click', e => {
+    if (e.target.classList.contains('filter-btn')) {
+      activeFilter = e.target.dataset.brand;
+      container.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.brand === activeFilter));
+      render();
+    }
+  });
+}
+
+function render() {
+  const grid = document.getElementById('reportGrid');
+  const empty = document.getElementById('emptyState');
+  const term = searchTerm.trim().toLowerCase();
+
+  const filtered = allReports.filter(r => {
+    if (activeFilter !== 'all' && r.brand !== activeFilter) return false;
+    if (!term) return true;
+    const haystack = [r.title, r.brand, r.model, r.summary, r.category, ...(r.tags || [])].join(' ').toLowerCase();
+    return haystack.includes(term);
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = filtered.map(r => `
+    <a class="report-card" href="${r.url}">
+      <div class="meta">
+        <span class="brand-tag">${r.brand || ''}</span>
+        ${r.category ? `<span class="category-tag">${r.category}</span>` : ''}
+      </div>
+      <h3>${r.title}</h3>
+      <p>${r.summary || ''}</p>
+      ${r.tags && r.tags.length ? `<div class="tags">${r.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="footer">
+        <span>${r.publishedAt || ''}</span>
+        <span>閱讀全文 →</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  render();
+});
+
+loadReports();
+</script>
+
+</body>
+</html>
