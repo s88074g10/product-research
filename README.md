@@ -6,7 +6,7 @@
 
 - **Repo**: GitHub Public
 - **發布**: Cloudflare Pages（自動 webhook，1~2 分鐘上線）
-- **網址**: `https://research.voccomputerpage.com.tw`（規劃中）/ `product-research.s88074g.workers.dev`（預設）
+- **網址**: `https://research.voccomputerpage.com.tw`（規劃中）/ `product-research.voccomputer.workers.dev`（預設）
 - **存取**: 公開，不掛 Access
 
 ## 結構
