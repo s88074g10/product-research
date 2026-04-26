@@ -1,22 +1,33 @@
-// Cloudflare Pages Function 單一入口
-// GET  /api/pm-checks                          列出所有提交（metadata only）
-// GET  /api/pm-checks?reportId=hp-elitebook-8  依 reportId 篩選
-// GET  /api/pm-checks?id=<key>                 取單筆完整內容（key 為 KV 完整 key）
-// POST /api/pm-checks                          PM 提交核對表
+// Cloudflare Worker 入口（取代 Pages Functions）
+// 路由：
+//   GET  /api/pm-checks                          列出所有提交（metadata only）
+//   GET  /api/pm-checks?reportId=hp-elitebook-8  依 reportId 篩選
+//   GET  /api/pm-checks?id=<key>                 取單筆完整內容
+//   POST /api/pm-checks                          PM 提交核對表
+//   其他路徑                                    → 交給 ASSETS 處理（靜態檔）
 
 const KEY_PREFIX = "pm-check:";
 const MAX_LIST = 200;
 
-export async function onRequest(context) {
-  const { request, env } = context;
-  if (!env.PM_CHECKS_KV) {
-    return reply({ ok: false, error: "KV 'PM_CHECKS_KV' 未綁定，請至 Pages → Settings → Functions → KV bindings" }, 500);
-  }
-  if (request.method === "OPTIONS") return cors();
-  if (request.method === "GET") return handleGet(request, env);
-  if (request.method === "POST") return handlePost(request, env);
-  return reply({ ok: false, error: "Method not allowed" }, 405);
-}
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (!url.pathname.startsWith("/api/")) {
+      return env.ASSETS.fetch(request);
+    }
+    if (url.pathname !== "/api/pm-checks") {
+      return reply({ ok: false, error: "Not found" }, 404);
+    }
+    if (!env.PM_CHECKS_KV) {
+      return reply({ ok: false, error: "KV 'PM_CHECKS_KV' 未綁定，請至 wrangler.jsonc 設定 kv_namespaces" }, 500);
+    }
+    if (request.method === "OPTIONS") return cors();
+    if (request.method === "GET") return handleGet(request, env);
+    if (request.method === "POST") return handlePost(request, env);
+    return reply({ ok: false, error: "Method not allowed" }, 405);
+  },
+};
 
 async function handleGet(request, env) {
   const url = new URL(request.url);

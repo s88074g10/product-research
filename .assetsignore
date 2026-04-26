@@ -1,0 +1,7 @@
+src/
+functions/
+wrangler.jsonc
+*.md
+.gitignore
+.git/
+node_modules/
