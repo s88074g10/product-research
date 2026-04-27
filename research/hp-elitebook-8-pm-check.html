@@ -60,6 +60,7 @@
   .progress-stats .stat.v { color:oklch(0.4 0.12 155); }
   .progress-stats .stat.x { color:oklch(0.45 0.18 25); }
   .progress-stats .stat.q { color:oklch(0.5 0.15 55); }
+  .progress-stats .stat.a { color:oklch(0.5 0.15 240); }
   .progress-stats .stat.todo { color:var(--ink-muted); }
   .progress-stats .pct { margin-left:auto; font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--ink); }
   .progress-fill { height:4px; background:var(--line); margin-top:8px; border-radius:2px; overflow:hidden; }
@@ -83,6 +84,7 @@
   .item.checked-v { background:oklch(0.99 0.012 155); }
   .item.checked-x { background:oklch(0.99 0.012 25); }
   .item.checked-q { background:oklch(0.99 0.012 55); }
+  .item.checked-a { background:oklch(0.99 0.012 240); }
   .item-content h4 { font-size:14px; font-weight:700; color:var(--ink); margin-bottom:4px; }
   .item-content h4 .tag { display:inline-block; padding:1px 6px; background:var(--brand-soft); color:var(--brand); font-size:10px; font-weight:600; margin-left:6px; letter-spacing:0.08em; vertical-align:middle; }
   .item-content p { font-size:13px; color:var(--ink-soft); line-height:1.65; }
@@ -96,6 +98,8 @@
   .check-btn.active.v { background:oklch(0.55 0.14 155); border-color:oklch(0.55 0.14 155); color:white; }
   .check-btn.active.x { background:oklch(0.55 0.2 25); border-color:oklch(0.55 0.2 25); color:white; }
   .check-btn.active.q { background:oklch(0.6 0.18 55); border-color:oklch(0.6 0.18 55); color:white; }
+  .check-btn.active.a { background:oklch(0.55 0.15 240); border-color:oklch(0.55 0.15 240); color:white; }
+  .check-btn.all-btn { font-size:14px; font-weight:700; }
   .check-btn.note-btn { font-size:13px; }
   .check-btn.note-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
 
@@ -135,6 +139,17 @@
     .submit-bar button { width:100%; }
   }
 
+  /* FAQ 簡答題 */
+  .faq-block { margin-top:48px; padding:24px 24px 28px; background:var(--info-soft); border-left:4px solid var(--info); }
+  .faq-block h2 { font-family:'Noto Serif TC',serif; font-weight:700; font-size:20px; margin-bottom:6px; color:oklch(0.4 0.15 240); }
+  .faq-block .faq-intro { font-size:13px; color:var(--ink-soft); margin-bottom:18px; line-height:1.7; }
+  .faq-item { margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid oklch(0.85 0.05 240 / 0.5); }
+  .faq-item:last-child { border-bottom:none; padding-bottom:0; margin-bottom:0; }
+  .faq-item .faq-q { font-size:14px; font-weight:700; color:var(--ink); margin-bottom:8px; line-height:1.6; }
+  .faq-item .faq-q .qnum { display:inline-block; background:var(--info); color:white; padding:2px 8px; font-size:11px; font-weight:700; margin-right:8px; font-family:'JetBrains Mono',monospace; }
+  .faq-item textarea { width:100%; padding:10px 12px; font-family:inherit; font-size:13px; border:1px solid var(--line); background:var(--paper); resize:vertical; min-height:80px; line-height:1.6; }
+  .faq-item textarea:focus { outline:none; border-color:var(--info); }
+
   @media print {
     .progress-bar, .submit-bar { display:none; }
     .check-btn { width:28px; height:28px; font-size:14px; }
@@ -159,11 +174,10 @@
 <div class="intro">
   <b>使用說明</b>
   <ol style="margin-top:6px;">
-    <li>每項功能後面有 3 個按鈕：<b>✓</b> 正確 / <b>✗</b> 錯誤 / <b>?</b> 不確定，點擊即可選擇</li>
+    <li>每項功能後面有 4 個按鈕：<b>✓</b> 正確 / <b>✗</b> 錯誤 / <b>?</b> 不確定 / <b>全</b>（= 全部 HP 商用機型且採用 Windows Pro 都共通的功能），點擊即可選擇</li>
     <li>若需補充說明，點 <b>📝</b> 開啟備註欄輸入</li>
-    <li>所有勾選會自動儲存到瀏覽器（離開不會丟失）</li>
-    <li>已根據 HP 經銷版報價單自動<b>預設打 ✓</b> 的項目，仍請 PM 確認；錯的請改成 ✗ 並備註正確規格</li>
-    <li>完成後請填寫姓名並點「<b>提交給華克</b>」即直接送出（不用 Email）</li>
+    <li>已根據 HP 經銷版報價單自動預設標記為「<b>全</b>」的項目，若該項並非全機型共通請改為 ✓ 或 ✗ 並備註正確規格</li>
+    <li>完成後請填寫姓名並點「<b>提交給華克</b>」即直接送出</li>
   </ol>
 </div>
 
@@ -179,6 +193,7 @@
     <span class="stat v">✓ <span class="num" id="cnt-v">0</span></span>
     <span class="stat x">✗ <span class="num" id="cnt-x">0</span></span>
     <span class="stat q">? <span class="num" id="cnt-q">0</span></span>
+    <span class="stat a">全 <span class="num" id="cnt-a">0</span></span>
     <span class="stat todo">未填 <span class="num" id="cnt-todo">0</span></span>
     <span class="pct" id="pct">0%</span>
   </div>
@@ -187,6 +202,9 @@
 
 <!-- 內容由 JS 渲染 -->
 <div id="content"></div>
+
+<!-- 簡答題（由 JS 渲染） -->
+<div id="faq-section"></div>
 
 </div>
 
@@ -226,14 +244,14 @@ const SPEC_DATA = [
     subtitle: "8 項",
     tag: "通用",
     sub: [
-      { name: "HP Sure Click", desc: "Email 附件、PDF、瀏覽器分頁自動開在 Micro-VM 微型虛擬容器，病毒只汙染容器，關閉即消失。", default: "v" },
-      { name: "HP Sure Sense", desc: "採用深度學習算法 + 神經網絡技術的 AI 防毒，識別惡意程式行為而非靠特徵檔，可擋零時差攻擊。", default: "v" },
-      { name: "HP Sure Start Gen7", desc: "全球首款自我修復 BIOS。每次開機驗證完整性，被竄改 / 損毀時自動從硬體層備份還原。", default: "v" },
+      { name: "HP Sure Click", desc: "Email 附件、PDF、瀏覽器分頁自動開在 Micro-VM 微型虛擬容器，病毒只汙染容器，關閉即消失。", default: "a" },
+      { name: "HP Sure Sense", desc: "採用深度學習算法 + 神經網絡技術的 AI 防毒，識別惡意程式行為而非靠特徵檔，可擋零時差攻擊。", default: "a" },
+      { name: "HP Sure Start Gen7", desc: "全球首款自我修復 BIOS。每次開機驗證完整性，被竄改 / 損毀時自動從硬體層備份還原。", default: "a" },
       { name: "HP Sure Admin", desc: "BIOS 認證改用管理員手機 App 掃 QR Code 授權，取代易遺失易外流的 BIOS 密碼。" },
-      { name: "HP Sure Recover", desc: "作業系統毀損時連網即可從 HP 雲端自動重灌 OS，不需 USB 開機碟。", default: "v" },
-      { name: "HP Sure Run Gen5", desc: "監測防毒、Wolf 等防護程序，被惡意關閉時自動重啟，等於資安防線自動回血。", default: "v" },
-      { name: "HP Tamper Lock", desc: "機殼開啟偵測。偵測到拆機（防 TPM 探測 / DMA 攻擊 / 快閃記憶體替換）即觸發鎖機。", default: "v" },
-      { name: "HP Client Security Manager Gen7", desc: "Wolf 套件中央控制台，整合管理上述所有 Sure 系列功能與資安政策。", default: "v" }
+      { name: "HP Sure Recover", desc: "作業系統毀損時連網即可從 HP 雲端自動重灌 OS，不需 USB 開機碟。", default: "a" },
+      { name: "HP Sure Run Gen5", desc: "監測防毒、Wolf 等防護程序，被惡意關閉時自動重啟，等於資安防線自動回血。", default: "a" },
+      { name: "HP Tamper Lock", desc: "機殼開啟偵測。偵測到拆機（防 TPM 探測 / DMA 攻擊 / 快閃記憶體替換）即觸發鎖機。", default: "a" },
+      { name: "HP Client Security Manager Gen7", desc: "Wolf 套件中央控制台，整合管理上述所有 Sure 系列功能與資安政策。", default: "a" }
     ]
   },
   {
@@ -242,10 +260,10 @@ const SPEC_DATA = [
     tag: "通用",
     sub: [
       { name: "HP BIOSphere", desc: "BIOS 層級防火牆框架，整合 Sure Start / DriveLock / Secure Boot。" },
-      { name: "HP DriveLock + 自動 DriveLock", desc: "SSD 整顆硬體層加密，配合 BIOS 密碼雙鎖，遺失也讀不出資料。", default: "v" },
-      { name: "HP Secure Erase / Disk Sanitizer", desc: "BIOS 內建工具，可徹底清除整顆 SSD（NIST 標準），筆電報廢前使用。", default: "v" },
-      { name: "HP Spare Key", desc: "Windows 密碼遺忘救援機制，避免員工忘記密碼時整台送修。", default: "v" },
-      { name: "TPM 2.0（Common Criteria EAL4+）", desc: "獨立安全晶片，符合國際資安認證 EAL4+ 級別。", default: "v" }
+      { name: "HP DriveLock + 自動 DriveLock", desc: "SSD 整顆硬體層加密，配合 BIOS 密碼雙鎖，遺失也讀不出資料。", default: "a" },
+      { name: "HP Secure Erase / Disk Sanitizer", desc: "BIOS 內建工具，可徹底清除整顆 SSD（NIST 標準），筆電報廢前使用。", default: "a" },
+      { name: "HP Spare Key", desc: "Windows 密碼遺忘救援機制，避免員工忘記密碼時整台送修。", default: "a" },
+      { name: "TPM 2.0（Common Criteria EAL4+）", desc: "獨立安全晶片，符合國際資安認證 EAL4+ 級別。", default: "a" }
     ]
   },
   {
@@ -274,35 +292,31 @@ const SPEC_DATA = [
     subtitle: "4 項",
     tag: "通用",
     sub: [
-      { name: "DuraKeys 超耐磨鍵盤", desc: "高耐磨漆面、等間距鍵盤設計。", default: "v" },
-      { name: "防潑水背光鍵盤", desc: "鍵盤防潑水設計，含 LED 背光。", default: "v" },
-      { name: "協同合作鍵盤", desc: "含 Copilot 鍵、隱私按鍵、視訊功能鍵等專為視訊會議優化的鍵位。", default: "v" },
-      { name: "Clickpad 玻璃觸控板", desc: "化學蝕刻表面玻璃觸控板，支援微軟手勢。", default: "v" }
+      { name: "DuraKeys 超耐磨鍵盤", desc: "高耐磨漆面、等間距鍵盤設計。", default: "a" },
+      { name: "防潑水背光鍵盤", desc: "鍵盤防潑水設計，含 LED 背光。", default: "a" },
+      { name: "協同合作鍵盤", desc: "含 Copilot 鍵、隱私按鍵、視訊功能鍵等專為視訊會議優化的鍵位。", default: "a" },
+      { name: "Clickpad 玻璃觸控板", desc: "化學蝕刻表面玻璃觸控板，支援微軟手勢。", default: "a" }
     ]
   },
   {
-    cat: "F. 擴充支援",
-    subtitle: "3 項",
-    tag: "通用",
-    sub: [
-      { name: "支援 HP USB-C / Thunderbolt Dock 系列", desc: "可搭配 HP 原廠擴充基座。", default: "v" },
-      { name: "HP USB-C Notebook Power Bank", desc: "支援 HP USB-C 行動電源充電。" },
-      { name: "外接 DVD-RW（選購）", desc: "支援 HP Mobile USB DVDRW 外接光碟機。", default: "v" }
-    ]
-  },
-  {
-    cat: "G. 商用品質",
+    cat: "F. 商用品質",
     subtitle: "4 項",
     tag: "通用",
     sub: [
-      { name: "3/3/3 全球有限保固", desc: "三年原廠保固（含全球有限保固）。", default: "v" },
-      { name: "Windows 11 Pro（非家用版）", desc: "預載 Win 11 Pro 商用版。", default: "v" },
-      { name: "Intel vPro 平台支援", desc: "IT 遠端管理平台支援（Ultra 7-256V 機型才有，Ultra 5-226V/228V 無）。", default: "v" },
+      { name: "3/3/3 全球有限保固", desc: "三年原廠保固（含全球有限保固）。", default: "a" },
+      { name: "Windows 11 Pro（非家用版）", desc: "預載 Win 11 Pro 商用版。", default: "a" },
+      { name: "Intel vPro 平台支援", desc: "IT 遠端管理平台支援（Ultra 7-256V 機型才有，Ultra 5-226V/228V 無）。", default: "a" },
       { name: "HP Privacy Camera Shutter", desc: "鏡頭實體護窗，物理層阻擋偷拍。" }
     ]
   }
 ];
 
+
+// ============== 簡答題資料 ==============
+const FAQ_DATA = [
+  { id: 'vpro', q: 'Intel vPro 平台支援 → 有哪些機型支援？是否是企業的重要參考指標？' },
+  { id: 'tamper', q: 'HP Tamper Lock → 改機時有需要特別注意的地方嗎？' }
+];
 
 // ============== State ==============
 const STORAGE_KEY = 'hp_elitebook_pm_check_v1';
@@ -343,6 +357,7 @@ function render() {
       <span class="cat-stat" id="cat-stat-${catIdx}"></span>
       <div class="quick-actions">
         <button onclick="quickFill(${catIdx}, 'v')">全 ✓</button>
+        <button onclick="quickFill(${catIdx}, 'a')">全 全</button>
         <button onclick="quickFill(${catIdx}, 'x')">全 ✗</button>
         <button onclick="quickFill(${catIdx}, null)">清空</button>
       </div>
@@ -373,6 +388,7 @@ function render() {
           <button class="check-btn ${cur.value==='v'?'active v':''}" onclick="setValue(${catIdx},${subIdx},'v')" title="正確">✓</button>
           <button class="check-btn ${cur.value==='x'?'active x':''}" onclick="setValue(${catIdx},${subIdx},'x')" title="錯誤">✗</button>
           <button class="check-btn ${cur.value==='q'?'active q':''}" onclick="setValue(${catIdx},${subIdx},'q')" title="不確定">?</button>
+          <button class="check-btn all-btn ${cur.value==='a'?'active a':''}" onclick="setValue(${catIdx},${subIdx},'a')" title="全部 HP 商用 + Win Pro 共通">全</button>
           <button class="check-btn note-btn ${cur.comment?'active':''}" onclick="toggleComment(${catIdx},${subIdx})" title="備註">📝</button>
         </div>
       `;
@@ -381,6 +397,9 @@ function render() {
 
     root.appendChild(catEl);
   });
+
+  // FAQ 簡答題渲染
+  renderFAQ();
 
   // 載入 PM 姓名
   const nameEl = document.getElementById('pm-name');
@@ -393,6 +412,32 @@ function render() {
   updateStats();
 }
 
+function renderFAQ() {
+  const root = document.getElementById('faq-section');
+  if (!root) return;
+  let html = `
+    <div class="faq-block">
+      <h2>簡答題</h2>
+      <p class="faq-intro">以下幾項若能協助解答，對於業務介紹很有幫助，再麻煩協助。</p>
+  `;
+  FAQ_DATA.forEach((f, i) => {
+    const ans = state['faq_'+f.id] || '';
+    html += `
+      <div class="faq-item">
+        <div class="faq-q"><span class="qnum">Q${i+1}</span>${f.q}</div>
+        <textarea placeholder="請填寫..." onchange="updateFAQ('${f.id}', this.value)">${ans}</textarea>
+      </div>
+    `;
+  });
+  html += '</div>';
+  root.innerHTML = html;
+}
+
+function updateFAQ(id, val) {
+  state['faq_'+id] = val;
+  saveState();
+}
+
 function setValue(catIdx, subIdx, val) {
   const key = itemKey(catIdx, subIdx);
   state[key] = state[key] || {};
@@ -401,19 +446,19 @@ function setValue(catIdx, subIdx, val) {
   saveState();
 
   const itemEl = document.getElementById('item-'+key);
-  itemEl.classList.remove('checked-v','checked-x','checked-q');
+  itemEl.classList.remove('checked-v','checked-x','checked-q','checked-a');
   if (state[key].value) itemEl.classList.add('checked-'+state[key].value);
   itemEl.querySelectorAll('.check-btn').forEach(btn => {
-    btn.classList.remove('active','v','x','q');
+    btn.classList.remove('active','v','x','q','a');
   });
-  ['v','x','q'].forEach((v,i) => {
+  ['v','x','q','a'].forEach((v,i) => {
     if (state[key].value === v) {
       const btn = itemEl.querySelectorAll('.check-btn')[i];
       btn.classList.add('active', v);
     }
   });
   if (state[key].comment) {
-    itemEl.querySelectorAll('.check-btn')[3].classList.add('active');
+    itemEl.querySelectorAll('.check-btn')[4].classList.add('active');
   }
   updateStats();
 }
@@ -445,26 +490,28 @@ function quickFill(catIdx, val) {
 }
 
 function updateStats() {
-  let v=0, x=0, q=0;
+  let v=0, x=0, q=0, a=0;
   SPEC_DATA.forEach((cat, catIdx) => {
-    let cv=0, cx=0, cq=0, ct=0;
+    let cv=0, cx=0, cq=0, ca=0, ct=0;
     cat.sub.forEach((_, subIdx) => {
       ct++;
       const val = state[itemKey(catIdx,subIdx)]?.value;
       if (val==='v') { v++; cv++; }
       else if (val==='x') { x++; cx++; }
       else if (val==='q') { q++; cq++; }
+      else if (val==='a') { a++; ca++; }
     });
     const stat = document.getElementById('cat-stat-'+catIdx);
-    if (stat) stat.textContent = `${cv+cx+cq}/${ct}`;
+    if (stat) stat.textContent = `${cv+cx+cq+ca}/${ct}`;
   });
-  const done = v+x+q;
+  const done = v+x+q+a;
   const todo = totalItems - done;
   const pct = totalItems ? Math.round(done/totalItems*100) : 0;
 
   document.getElementById('cnt-v').textContent = v;
   document.getElementById('cnt-x').textContent = x;
   document.getElementById('cnt-q').textContent = q;
+  document.getElementById('cnt-a').textContent = a;
   document.getElementById('cnt-todo').textContent = todo;
   document.getElementById('pct').textContent = pct + '%';
   document.getElementById('progress-fill').style.width = pct + '%';
@@ -485,8 +532,8 @@ function buildExport() {
     name: state.__pm_name || '(未填)'
   };
 
-  const result = { pm, reportId: 'hp-elitebook-8', date: new Date().toISOString().slice(0,10), items: [] };
-  let v=0, x=0, q=0, todo=0;
+  const result = { pm, reportId: 'hp-elitebook-8', date: new Date().toISOString().slice(0,10), items: [], faq: [] };
+  let v=0, x=0, q=0, a=0, todo=0;
 
   SPEC_DATA.forEach((cat, catIdx) => {
     cat.sub.forEach((item, subIdx) => {
@@ -501,10 +548,14 @@ function buildExport() {
       if (cur.value === 'v') v++;
       else if (cur.value === 'x') x++;
       else if (cur.value === 'q') q++;
+      else if (cur.value === 'a') a++;
       else todo++;
     });
   });
-  result.summary = { v, x, q, todo, total: totalItems };
+  result.summary = { v, x, q, a, todo, total: totalItems };
+  FAQ_DATA.forEach(f => {
+    result.faq.push({ id: f.id, question: f.q, answer: (state['faq_'+f.id]||'').trim() });
+  });
   return result;
 }
 
@@ -513,7 +564,7 @@ function buildText(data) {
   lines.push('=== EliteBook 8 G1i 規格核對表 · PM 回覆 ===');
   lines.push(`PM: ${data.pm.name}`);
   lines.push(`日期: ${data.date}`);
-  lines.push(`統計: ✓正確 ${data.summary.v} / ✗錯誤 ${data.summary.x} / ?不確定 ${data.summary.q} / 未填 ${data.summary.todo}`);
+  lines.push(`統計: ✓正確 ${data.summary.v} / ✗錯誤 ${data.summary.x} / ?不確定 ${data.summary.q} / 全機型共通 ${data.summary.a} / 未填 ${data.summary.todo}`);
   lines.push('');
 
   // 只列「需要關注」的 = 錯誤、不確定、有備註
@@ -530,7 +581,7 @@ function buildText(data) {
         lines.push(`【${it.category}】`);
         curCat = it.category;
       }
-      const symbol = it.verdict === 'v' ? '✓' : it.verdict === 'x' ? '✗' : it.verdict === 'q' ? '?' : '·';
+      const symbol = it.verdict === 'v' ? '✓' : it.verdict === 'x' ? '✗' : it.verdict === 'q' ? '?' : it.verdict === 'a' ? '全' : '·';
       lines.push(`${symbol} ${it.feature}`);
       if (it.comment) lines.push(`   備註: ${it.comment}`);
     });
@@ -545,9 +596,19 @@ function buildText(data) {
       lines.push(`【${it.category}】`);
       curCat = it.category;
     }
-    const symbol = it.verdict === 'v' ? '✓' : it.verdict === 'x' ? '✗' : it.verdict === 'q' ? '?' : '·';
+    const symbol = it.verdict === 'v' ? '✓' : it.verdict === 'x' ? '✗' : it.verdict === 'q' ? '?' : it.verdict === 'a' ? '全' : '·';
     lines.push(`  ${symbol} ${it.feature}${it.comment ? ' — '+it.comment : ''}`);
   });
+
+  if (data.faq && data.faq.length) {
+    lines.push('');
+    lines.push('=== 簡答題 ===');
+    data.faq.forEach((f, i) => {
+      lines.push('');
+      lines.push(`Q${i+1}. ${f.question}`);
+      lines.push(`A: ${f.answer || '(未填)'}`);
+    });
+  }
 
   return lines.join('\n');
 }
