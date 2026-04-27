@@ -237,7 +237,7 @@ const SPEC_DATA = [
     ]
   },
   {
-    cat: "A. BIOS / 硬體資安",
+    cat: "B. BIOS / 硬體資安",
     subtitle: "5 項",
     tag: "通用",
     sub: [
@@ -249,7 +249,7 @@ const SPEC_DATA = [
     ]
   },
   {
-    cat: "A. 驗證 / 加密",
+    cat: "C. 驗證 / 加密",
     subtitle: "2 項",
     tag: "通用",
     sub: [
@@ -258,7 +258,7 @@ const SPEC_DATA = [
     ]
   },
   {
-    cat: "A. 企業 IT 管理",
+    cat: "D. 企業 IT 管理",
     subtitle: "5 項",
     tag: "通用",
     sub: [
@@ -270,7 +270,7 @@ const SPEC_DATA = [
     ]
   },
   {
-    cat: "A. 輸入 / 鍵盤",
+    cat: "E. 輸入 / 鍵盤",
     subtitle: "4 項",
     tag: "通用",
     sub: [
@@ -281,7 +281,7 @@ const SPEC_DATA = [
     ]
   },
   {
-    cat: "A. 擴充支援",
+    cat: "F. 擴充支援",
     subtitle: "3 項",
     tag: "通用",
     sub: [
@@ -291,7 +291,7 @@ const SPEC_DATA = [
     ]
   },
   {
-    cat: "A. 商用品質",
+    cat: "G. 商用品質",
     subtitle: "4 項",
     tag: "通用",
     sub: [
@@ -511,7 +511,7 @@ function buildExport() {
 function buildText(data) {
   const lines = [];
   lines.push('=== EliteBook 8 G1i 規格核對表 · PM 回覆 ===');
-  lines.push(`PM: ${data.pm.name} (${data.pm.contact})`);
+  lines.push(`PM: ${data.pm.name}`);
   lines.push(`日期: ${data.date}`);
   lines.push(`統計: ✓正確 ${data.summary.v} / ✗錯誤 ${data.summary.x} / ?不確定 ${data.summary.q} / 未填 ${data.summary.todo}`);
   lines.push('');
@@ -538,7 +538,7 @@ function buildText(data) {
 
   lines.push('');
   lines.push('=== 完整清單 ===');
-  let curCat = '';
+  curCat = '';
   data.items.forEach(it => {
     if (it.category !== curCat) {
       lines.push('');
