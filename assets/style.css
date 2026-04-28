@@ -243,6 +243,7 @@ main {
   padding: 24px 28px;
   margin-bottom: 32px;
   border-radius: 4px;
+  position: relative;
 }
 .pm-admin-head {
   display: flex; justify-content: space-between; align-items: flex-end;

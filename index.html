@@ -24,6 +24,7 @@
 <main>
   <!-- PM 核對表管理區（內部用，PM 看不到也沒差） -->
   <section class="pm-admin" id="pmAdmin" style="display:none;">
+    <button onclick="hidePmAdmin()" title="隱藏管理面板（重新打開請加 ?admin=1）" style="position:absolute; top:12px; right:14px; background:transparent; color:#94a3b8; border:1px solid #475569; width:28px; height:28px; cursor:pointer; font-size:14px; line-height:1;">×</button>
     <div class="pm-admin-head">
       <div>
         <div class="pm-admin-eyebrow">PM CHECK · 內部管理</div>
@@ -142,6 +143,11 @@ document.getElementById('searchInput').addEventListener('input', e => {
 
 loadReports();
 loadPmAdmin();
+
+function hidePmAdmin() {
+  localStorage.removeItem('voc_admin');
+  document.getElementById('pmAdmin').style.display = 'none';
+}
 
 async function loadPmAdmin() {
   // 加 ?admin=1 才顯示，避免一般訪客看到內部管理；存 localStorage 之後不用再帶
