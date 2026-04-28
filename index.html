@@ -30,15 +30,17 @@
         <h2>PM 規格核對表</h2>
       </div>
       <div class="pm-admin-stats">
-        <div class="pm-stat"><span class="num" id="pmTotal">—</span><span class="label">提交筆數</span></div>
-        <div class="pm-stat"><span class="num" id="pmRecent">—</span><span class="label">7 天內新增</span></div>
+        <div class="pm-stat" style="text-align:right;">
+          <span class="label" style="display:block;">查詢回覆</span>
+          <span style="font-size:13px; color:#cbd5e1;">→ 點右下方按鈕</span>
+        </div>
       </div>
     </div>
     <div class="pm-admin-actions">
       <a class="pm-btn primary" href="/pm" target="_blank">📋 PM 填寫頁（給 HP PM）</a>
-      <a class="pm-btn" href="/pm-results" target="_blank">📊 看回覆結果（內部）</a>
+      <a class="pm-btn" href="https://voc-reports.voccomputer.workers.dev/research/pm-check-results.html" target="_blank">📊 看回覆結果（受 Access 保護）</a>
     </div>
-    <p class="pm-admin-tip">短連結：<code>/pm</code>（給 PM）· <code>/pm-results</code>（看回覆）</p>
+    <p class="pm-admin-tip">短連結：<code>/pm</code>（給 PM 填）· 內部回覆查詢走 voc-reports（需 Cloudflare Access 登入）</p>
   </section>
 
   <div class="toolbar">
@@ -142,25 +144,11 @@ loadReports();
 loadPmAdmin();
 
 async function loadPmAdmin() {
-  // 加 ?admin=1 才顯示，避免一般訪客看到內部管理
+  // 加 ?admin=1 才顯示，避免一般訪客看到內部管理；存 localStorage 之後不用再帶
   const isAdmin = new URLSearchParams(location.search).has('admin') || localStorage.getItem('voc_admin') === '1';
   if (!isAdmin) return;
   if (new URLSearchParams(location.search).has('admin')) localStorage.setItem('voc_admin', '1');
-
   document.getElementById('pmAdmin').style.display = 'block';
-  try {
-    const r = await fetch('/api/pm-checks');
-    const j = await r.json();
-    if (!j.ok) return;
-    const items = j.items || [];
-    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-    const recent = items.filter(it => (it.metadata?.submittedAt || '') >= sevenDaysAgo).length;
-    document.getElementById('pmTotal').textContent = items.length;
-    document.getElementById('pmRecent').textContent = recent;
-  } catch (e) {
-    document.getElementById('pmTotal').textContent = '?';
-    document.getElementById('pmRecent').textContent = '?';
-  }
 }
 </script>
 

@@ -1,19 +1,15 @@
-// Cloudflare Worker 入口（取代 Pages Functions）
+// Cloudflare Worker 入口（公開站，僅開放 POST 給 PM 提交）
 // 路由：
-//   GET  /api/pm-checks                          列出所有提交（metadata only）
-//   GET  /api/pm-checks?reportId=hp-elitebook-8  依 reportId 篩選
-//   GET  /api/pm-checks?id=<key>                 取單筆完整內容
-//   POST /api/pm-checks                          PM 提交核對表
-//   GET  /pm                                     → 跳 PM 核對表
-//   GET  /pm-results                             → 跳內部結果頁
-//   其他路徑                                    → 交給 ASSETS 處理（靜態檔，無副檔名自動補 .html）
+//   POST /api/pm-checks   PM 提交核對表（公開）
+//   GET  /api/pm-checks   一律拒絕；查詢請走 voc-reports（受 Access 保護）
+//   GET  /pm              → 跳 PM 核對表
+//   其他路徑              → 交給 ASSETS 處理（靜態檔，無副檔名自動補 .html）
 
 const KEY_PREFIX = "pm-check:";
-const MAX_LIST = 200;
+const KV_TTL_SECONDS = 90 * 24 * 60 * 60; // 90 天
 
 const SHORTLINKS = {
   "/pm": "/research/hp-elitebook-8-pm-check.html",
-  "/pm-results": "/research/pm-check-results.html",
 };
 
 export default {
@@ -41,32 +37,10 @@ export default {
       return reply({ ok: false, error: "KV 'PM_CHECKS_KV' 未綁定，請至 wrangler.jsonc 設定 kv_namespaces" }, 500);
     }
     if (request.method === "OPTIONS") return cors();
-    if (request.method === "GET") return handleGet(request, env);
     if (request.method === "POST") return handlePost(request, env);
     return reply({ ok: false, error: "Method not allowed" }, 405);
   },
 };
-
-async function handleGet(request, env) {
-  const url = new URL(request.url);
-  const fullKey = url.searchParams.get("id");
-  if (fullKey) {
-    const value = await env.PM_CHECKS_KV.get(fullKey);
-    if (!value) return reply({ ok: false, error: "Not found" }, 404);
-    return new Response(value, { headers: jsonHeaders() });
-  }
-  const reportId = sanitize(url.searchParams.get("reportId") || "", /[^a-z0-9-]/gi);
-  const prefix = reportId ? `${KEY_PREFIX}${reportId}:` : KEY_PREFIX;
-  let list;
-  try {
-    list = await env.PM_CHECKS_KV.list({ prefix, limit: MAX_LIST });
-  } catch (e) {
-    return reply({ ok: false, error: "KV list failed: " + e.message }, 500);
-  }
-  const items = list.keys.map((k) => ({ key: k.name, metadata: k.metadata || {} }));
-  items.sort((a, b) => (b.metadata.submittedAt || "").localeCompare(a.metadata.submittedAt || ""));
-  return reply({ ok: true, items, count: items.length });
-}
 
 async function handlePost(request, env) {
   let body;
@@ -82,7 +56,7 @@ async function handlePost(request, env) {
   const record = makeRecord(id, reportId, ts, body, pmName);
   const metadata = makeMeta(pmName, reportId, ts, record.summary);
   try {
-    await env.PM_CHECKS_KV.put(fullKey, JSON.stringify(record), { metadata });
+    await env.PM_CHECKS_KV.put(fullKey, JSON.stringify(record), { metadata, expirationTtl: KV_TTL_SECONDS });
   } catch (e) {
     return reply({ ok: false, error: "KV write failed: " + e.message }, 500);
   }
