@@ -4,16 +4,34 @@
 //   GET  /api/pm-checks?reportId=hp-elitebook-8  依 reportId 篩選
 //   GET  /api/pm-checks?id=<key>                 取單筆完整內容
 //   POST /api/pm-checks                          PM 提交核對表
-//   其他路徑                                    → 交給 ASSETS 處理（靜態檔）
+//   GET  /pm                                     → 跳 PM 核對表
+//   GET  /pm-results                             → 跳內部結果頁
+//   其他路徑                                    → 交給 ASSETS 處理（靜態檔，無副檔名自動補 .html）
 
 const KEY_PREFIX = "pm-check:";
 const MAX_LIST = 200;
+
+const SHORTLINKS = {
+  "/pm": "/research/hp-elitebook-8-pm-check.html",
+  "/pm-results": "/research/pm-check-results.html",
+};
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (SHORTLINKS[url.pathname]) {
+      return Response.redirect(new URL(SHORTLINKS[url.pathname], url.origin).toString(), 302);
+    }
+
     if (!url.pathname.startsWith("/api/")) {
+      // 無副檔名先嘗試 .html 補
+      if (!url.pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(url.pathname)) {
+        const tryUrl = new URL(url);
+        tryUrl.pathname = url.pathname + ".html";
+        const tryRes = await env.ASSETS.fetch(new Request(tryUrl, request));
+        if (tryRes.status === 200) return tryRes;
+      }
       return env.ASSETS.fetch(request);
     }
     if (url.pathname !== "/api/pm-checks") {

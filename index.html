@@ -22,6 +22,25 @@
 </header>
 
 <main>
+  <!-- PM 核對表管理區（內部用，PM 看不到也沒差） -->
+  <section class="pm-admin" id="pmAdmin" style="display:none;">
+    <div class="pm-admin-head">
+      <div>
+        <div class="pm-admin-eyebrow">PM CHECK · 內部管理</div>
+        <h2>PM 規格核對表</h2>
+      </div>
+      <div class="pm-admin-stats">
+        <div class="pm-stat"><span class="num" id="pmTotal">—</span><span class="label">提交筆數</span></div>
+        <div class="pm-stat"><span class="num" id="pmRecent">—</span><span class="label">7 天內新增</span></div>
+      </div>
+    </div>
+    <div class="pm-admin-actions">
+      <a class="pm-btn primary" href="/pm" target="_blank">📋 PM 填寫頁（給 HP PM）</a>
+      <a class="pm-btn" href="/pm-results" target="_blank">📊 看回覆結果（內部）</a>
+    </div>
+    <p class="pm-admin-tip">短連結：<code>/pm</code>（給 PM）· <code>/pm-results</code>（看回覆）</p>
+  </section>
+
   <div class="toolbar">
     <input type="search" id="searchInput" placeholder="搜尋型號、品牌、關鍵字…" aria-label="搜尋">
     <div class="filter-group" id="brandFilters">
@@ -120,6 +139,29 @@ document.getElementById('searchInput').addEventListener('input', e => {
 });
 
 loadReports();
+loadPmAdmin();
+
+async function loadPmAdmin() {
+  // 加 ?admin=1 才顯示，避免一般訪客看到內部管理
+  const isAdmin = new URLSearchParams(location.search).has('admin') || localStorage.getItem('voc_admin') === '1';
+  if (!isAdmin) return;
+  if (new URLSearchParams(location.search).has('admin')) localStorage.setItem('voc_admin', '1');
+
+  document.getElementById('pmAdmin').style.display = 'block';
+  try {
+    const r = await fetch('/api/pm-checks');
+    const j = await r.json();
+    if (!j.ok) return;
+    const items = j.items || [];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    const recent = items.filter(it => (it.metadata?.submittedAt || '') >= sevenDaysAgo).length;
+    document.getElementById('pmTotal').textContent = items.length;
+    document.getElementById('pmRecent').textContent = recent;
+  } catch (e) {
+    document.getElementById('pmTotal').textContent = '?';
+    document.getElementById('pmRecent').textContent = '?';
+  }
+}
 </script>
 
 </body>
