@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>網路排檔表異常清單 — 2026-05-06</title>
+<style>
+  :root {
+    --primary: #6c63ff;
+    --accent: #00d4aa;
+    --warn: #ffd166;
+    --danger: #ff6b6b;
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #23273a;
+    --text: #e8eaf6;
+    --text-muted: #8892b0;
+    --border: #2e3350;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'PingFang TC', 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  header {
+    background: linear-gradient(135deg, #12101f 0%, #1a1d35 50%, #0f1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 1.8rem;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  header .meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  header .meta strong { color: var(--text); }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  .summary {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .summary h2 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--accent);
+  }
+  .summary .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+  .summary .stat {
+    background: var(--bg3);
+    padding: 14px;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+  .summary .stat.warn { border-left-color: var(--warn); }
+  .summary .stat.danger { border-left-color: var(--danger); }
+  .summary .stat .label { font-size: 0.8rem; color: var(--text-muted); }
+  .summary .stat .value { font-size: 1.6rem; font-weight: 600; margin-top: 4px; }
+  .summary .stat .desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  .section {
+    margin-bottom: 32px;
+  }
+  .section h2 {
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-danger { background: rgba(255, 107, 107, 0.15); color: var(--danger); border: 1px solid rgba(255, 107, 107, 0.3); }
+  .badge-warn { background: rgba(255, 209, 102, 0.15); color: var(--warn); border: 1px solid rgba(255, 209, 102, 0.3); }
+  .badge-info { background: rgba(108, 99, 255, 0.15); color: var(--primary); border: 1px solid rgba(108, 99, 255, 0.3); }
+
+  .item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+  }
+  .item .partno {
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 6px;
+    word-break: break-all;
+  }
+  .item .detail {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .item .detail strong { color: var(--text); }
+  .item .action {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary);
+    font-size: 0.85rem;
+  }
+  .item .action::before {
+    content: "▶ PM 行動：";
+    color: var(--primary);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .item .action.urgent { border-left-color: var(--danger); }
+  .item .action.urgent::before { color: var(--danger); }
+  .item .action.fix { border-left-color: var(--warn); }
+  .item .action.fix::before { color: var(--warn); }
+
+  .erp-suggestion {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 212, 170, 0.08);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .erp-suggestion code {
+    background: var(--bg3);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Consolas, monospace;
+    color: var(--text);
+  }
+
+  .gsheet-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 14px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .gsheet-link:hover { opacity: 0.9; }
+
+  .footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 32px 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .footer .ts { color: var(--accent); }
+
+  .context-box {
+    background: rgba(108, 99, 255, 0.08);
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .context-box strong { color: var(--text); }
+
+  @media (max-width: 600px) {
+    header { padding: 20px 16px; }
+    header h1 { font-size: 1.3rem; }
+    .summary .stats { grid-template-columns: 1fr 1fr; }
+    .summary .stat .value { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>網路排檔表異常清單</h1>
+  <div class="meta">
+    產生時間：<strong>2026-05-06 11:00</strong> ·
+    對照來源：<strong>VOC Ecom_PriceSchedule</strong> ↔ <strong>ERP comProduct</strong> ↔ <strong>GSheet 排檔表</strong>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="summary">
+    <h2>📊 摘要</h2>
+    <div class="stats">
+      <div class="stat">
+        <div class="label">當前 active PartNo</div>
+        <div class="value">495</div>
+        <div class="desc">VOC 上架中</div>
+      </div>
+      <div class="stat warn">
+        <div class="label">需 PM 處理</div>
+        <div class="value">7</div>
+        <div class="desc">寫法錯誤 / ERP 沒建檔</div>
+      </div>
+      <div class="stat danger">
+        <div class="label">業務不一致</div>
+        <div class="value">1</div>
+        <div class="desc">GSheet 仍給促銷但 ERP 已停售</div>
+      </div>
+      <div class="stat">
+        <div class="label">BrandCode normalize</div>
+        <div class="value" style="color: var(--accent);">✓</div>
+        <div class="desc">已自動完成（無需處理）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="context-box">
+    <strong>📌 背景說明</strong><br>
+    系統定期（每 10 分鐘）讀取
+    <a href="https://docs.google.com/spreadsheets/d/1UK-G481xxCRcPJ7mfjayNyGyOSh4la5i1AHtluyW1ug/edit" target="_blank" style="color: var(--accent);">排檔表 GSheet</a>
+    把「公開版面價 / 排檔價 / 短促價」匯入 VOC 系統。每筆 PartNo 會去 ERP 對照分類取得 BrandCode。
+    本報表列出三類異常：(1) ERP 已停售但 GSheet 仍給促銷 (2) GSheet 寫法錯誤可立即修正 (3) ERP 完全沒建檔需要人工確認。
+  </div>
+
+  <!-- ============================================ -->
+  <!-- Section 1: 業務不一致（最緊急）             -->
+  <!-- ============================================ -->
+  <div class="section">
+    <h2><span class="badge badge-danger">緊急</span> ⚠️ ERP 已停售但 GSheet 仍給促銷</h2>
+
+    <div class="item">
+      <div class="partno">NB-ACER-AL14-51P-5975</div>
+      <div class="detail">
+        <strong>ERP 分類</strong>：A099 NB-暫停使用（已停售）<br>
+        <strong>GSheet 狀況</strong>：仍在排檔表內，5/6 早上 10:00 寫入：
+        <ul style="margin: 4px 0 0 18px;">
+          <li>排檔價 16,900（5/1-5/31）</li>
+          <li>短促價 15,900（5/4-5/10）</li>
+        </ul>
+        <strong>影響</strong>：客戶在網站可看到此型號促銷價，但 ERP 已停售，下單後可能無法出貨
+      </div>
+      <div class="action urgent">
+        二擇一：<br>
+        (A) <strong>GSheet 移除這支</strong>（如果真的不賣了）<br>
+        (B) <strong>ERP 把 ClassID 從 A099 改回 A004</strong>（如果還要賣）
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- Section 2: GSheet 寫法錯誤（容易修）       -->
+  <!-- ============================================ -->
+  <div class="section">
+    <h2><span class="badge badge-warn">可立即修正</span> 🟡 GSheet PartNo 寫法錯誤</h2>
+
+    <div class="item">
+      <div class="partno">NB-LENOVO-YOGA-SLIM-7I-83JQ003HTW</div>
+      <div class="detail">
+        <strong>狀況</strong>：ERP 找不到此 PartNo<br>
+        <strong>ERP 實際 ProdID</strong>：<code style="background: var(--bg3); padding: 2px 6px; border-radius: 3px;">NB-LENOVO-YOGA-SLIM-7I-83JQ003HTW(2IN1)</code>（多了 <strong>(2IN1)</strong> 後綴）<br>
+        <strong>規格</strong>：14" 2.8K OLED 觸控翻轉 / Ultra 7-258V / 32GB / 1TB / Win 11 Pro / 3Y
+      </div>
+      <div class="action fix">
+        GSheet 把 PartNo 改成 <code style="background: var(--bg3); padding: 2px 6px; border-radius: 3px;">NB-LENOVO-YOGA-SLIM-7I-83JQ003HTW(2IN1)</code>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="partno">NB-MSI-CYBORG-15-B2RW<span style="color: var(--danger);">F</span>KG-892TW</div>
+      <div class="detail">
+        <strong>狀況</strong>：GSheet 把 <code style="background: var(--bg3); padding: 2px 6px; border-radius: 3px; color: var(--danger);">B2RWFKG</code> 寫錯（F），ERP 正確是 <code style="background: var(--bg3); padding: 2px 6px; border-radius: 3px; color: var(--accent);">B2RW<span style="color: var(--accent);">E</span>KG</code>（E）<br>
+        <strong>ERP 正確 ProdID</strong>：<code style="background: var(--bg3); padding: 2px 6px; border-radius: 3px; color: var(--accent);">NB-MSI-CYBORG-15-B2RWEKG-892TW</code>
+      </div>
+      <div class="action fix">
+        GSheet 把 PartNo 改成 <code style="background: var(--bg3); padding: 2px 6px; border-radius: 3px;">NB-MSI-CYBORG-15-B2RWEKG-892TW</code>（F → E）
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- Section 3: ERP 沒建檔（需確認）            -->
+  <!-- ============================================ -->
+  <div class="section">
+    <h2><span class="badge badge-info">需確認</span> 🔴 ERP 沒有此 SKU</h2>
+
+    <div class="item">
+      <div class="partno">NB-ACER-AL15-42P-R9FR</div>
+      <div class="detail">
+        <strong>狀況</strong>：ERP 完全沒有 R9FR 後綴<br>
+        <strong>ERP AL15-42P 系列已建檔</strong>：R179 / R22F / R2GN / R43M / R5X3 / R8FW / R8QP（共 7 個其他後綴）
+      </div>
+      <div class="action">
+        確認 R9FR 是否為真實在售 SKU：<br>
+        → 是 ⇒ ERP 補建檔<br>
+        → 否（筆誤）⇒ GSheet 改正成正確後綴或移除
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="partno">NB-ACER-SFL14-41P-R447</div>
+      <div class="detail">
+        <strong>狀況</strong>：ERP 沒有 SFL14-<strong>41P</strong> 系列，只有 SFL14-<strong>41M</strong>-R1MR<br>
+        <strong>推測</strong>：機型代碼 41P 可能應為 41M 之筆誤，或是全新世代尚未建檔
+      </div>
+      <div class="action">
+        跟原廠確認 SFL14-41P-R447 是否存在：<br>
+        → 是 ⇒ ERP 補建檔<br>
+        → 否（應為 41M）⇒ GSheet 改成 SFL14-41M-R447 並確認 ERP 對應 SKU
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="partno">NB-ACER-SFG14-73-555E</div>
+      <div class="detail">
+        <strong>狀況</strong>：ERP 沒有 555E 後綴<br>
+        <strong>ERP SFG14-73 系列已建檔</strong>：50MV / 52ZG / 53HY / 55CK / 57U5 / 59JD<br>
+        <strong>注意</strong>：50MV / 52ZG / 55CK / 57U5 已歸到 A099 停售類
+      </div>
+      <div class="action">
+        確認 555E 是否真實 SKU：<br>
+        → 是 ⇒ ERP 補建檔<br>
+        → 否（筆誤）⇒ GSheet 改成正確後綴（可能是 55CK）
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="partno">NB-LG-17MT70.ASDC2</div>
+      <div class="detail">
+        <strong>狀況</strong>：ERP 完全沒有 17MT 開頭型號<br>
+        <strong>ERP LG 17 吋系列僅有</strong>：17Z90N/P/Q/R/S/TL/U（gram 系列）<br>
+        <strong>推測</strong>：可能是 LG Gram Pro 17 新機型 2025 ERP 尚未建檔
+      </div>
+      <div class="action">
+        跟 LG 業務確認此型號：<br>
+        → 在售 ⇒ ERP 立即補建檔（影響上架）<br>
+        → 已停售 ⇒ GSheet 移除
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- Section 4: 已自動修復（資訊）              -->
+  <!-- ============================================ -->
+  <div class="section">
+    <h2><span class="badge badge-info">資訊</span> ✅ 已自動修復</h2>
+
+    <div class="item">
+      <div class="partno" style="color: var(--accent);">BrandCode normalize（568 筆）</div>
+      <div class="detail">
+        <strong>原狀況</strong>：DB 中 BrandCode 短碼（ACER / ASUS / LENOVO / LG）跟 ERP ClassName（NB-ACER / NB-ASUS 家用大筆電 等）並存<br>
+        <strong>修復方式</strong>：v1.132.5 部署後，每次 GSheet polling 自動把 BrandCode 寫成 ERP ClassName，目前已全部對齊<br>
+        <strong>結論</strong>：無需人工介入
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="partno" style="color: var(--accent);">孤兒 list（246 筆 migrate-from-reference）</div>
+      <div class="detail">
+        <strong>原狀況</strong>：3/12 系統初始遷移留下的舊 list 紀錄永遠不會被清除，造成「公開版面價」顯示舊殘留<br>
+        <strong>修復方式</strong>：v1.132.5 改 importFromN8n 邏輯，下次 polling 自動清除<br>
+        <strong>結論</strong>：active list 從 514 → 119 筆，全部正常
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div>VOC Knowledge Hub · 電商資料品質報表</div>
+  <div class="ts">© 2026-05-06 11:00 自動產生 · 對應修復版本 v1.132.4 / v1.132.5</div>
+</div>
+
+</body>
+</html>
