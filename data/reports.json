@@ -1,6 +1,18 @@
 {
   "reports": [
     {
+      "slug": "computex-2026",
+      "title": "COMPUTEX 2026 筆電新機總整理",
+      "brand": "ACER / MSI / ASUS",
+      "category": "展會新機",
+      "model": "COMPUTEX 2026",
+      "summary": "COMPUTEX 2026 展場筆電新機總整理：ACER 8 款、MSI 11 款、ASUS 8 款，含規格牌與多張機器照片、點圖放大預覽。",
+      "tags": ["COMPUTEX", "新機", "電競", "AI PC", "ACER", "MSI", "ASUS"],
+      "publishedAt": "2026-06-05",
+      "updatedAt": "2026-06-05",
+      "url": "research/computex-2026.html"
+    },
+    {
       "slug": "hp-elitebook-8",
       "title": "HP EliteBook 8 G1i 14 研究報告",
       "brand": "HP",
