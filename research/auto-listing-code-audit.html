@@ -240,6 +240,7 @@
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" aria-selected="true" data-pane="report">檢查報告</button>
     <button class="tab" role="tab" aria-selected="false" data-pane="plan">修復清單<span class="badge">單人版</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="changes">變更明細<span class="badge">✓ 4 檔</span></button>
   </nav>
 
   <div id="pane-report" class="pane active">
@@ -497,6 +498,90 @@
     </div>
 
   </div><!-- /pane-plan -->
+
+  <!-- ============ 變更明細分頁 ============ -->
+  <div id="pane-changes" class="pane">
+
+    <div class="callout">
+      <b>2026-06-11 已修改 4 個檔案</b>　修必修 3 項。檔案位於本機 <code>_tmp/自動上架專案/自動上架專案/</code>（非 git 管控）。下方為 before → after。為安全，金鑰值一律以 <code>***</code> 顯示。
+    </div>
+
+    <section style="margin-top:1.5rem">
+      <h2><span class="num">①</span>sign_in.py　<span class="floc" style="font-size:.8rem">Yahoo購物/sign_in.py</span></h2>
+      <p class="lead muted">必修 1：移除硬編金鑰 fallback，一律讀 .env、缺則報錯。</p>
+      <p style="font-size:.85rem;color:var(--red);font-weight:700;margin:.4rem 0">— 修改前</p>
+      <pre>TOKEN    = os.getenv("YH_TOKEN")    or "Supplier_****"
+KEYVALUE = os.getenv("YH_KEYVALUE") or "*** 硬編金鑰 ***"
+KEYIV    = os.getenv("YH_KEYIV")    or "*** 硬編金鑰 ***"
+SALTKEY  = os.getenv("YH_SALTKEY")  or "*** 硬編金鑰 ***"</pre>
+      <p style="font-size:.85rem;color:var(--green);font-weight:700;margin:.4rem 0">+ 修改後</p>
+      <pre>TOKEN    = os.getenv("YH_TOKEN")        <span class="cmt"># 不再內嵌金鑰</span>
+KEYVALUE = os.getenv("YH_KEYVALUE")
+KEYIV    = os.getenv("YH_KEYIV")
+SALTKEY  = os.getenv("YH_SALTKEY")
+<span class="cmt"># 缺 env 時 raise，並附 .env 路徑提示</span></pre>
+    </section>
+
+    <section>
+      <h2><span class="num">②</span>建立加贈賣場.py　<span class="floc" style="font-size:.8rem">:408–409</span></h2>
+      <p class="lead muted">必修 2：拿掉 multipart 欄位名尾端空白。</p>
+      <p style="font-size:.85rem;color:var(--red);font-weight:700;margin:.4rem 0">— 修改前</p>
+      <pre>"<span class="hl">uploadFile&nbsp;&nbsp;</span>": (None, "false"),
+"<span class="hl">combinePic&nbsp;</span>": (None, "true"),</pre>
+      <p style="font-size:.85rem;color:var(--green);font-weight:700;margin:.4rem 0">+ 修改後</p>
+      <pre>"<span class="hl">uploadFile</span>": (None, "false"),
+"<span class="hl">combinePic</span>": (None, "true"),</pre>
+    </section>
+
+    <section>
+      <h2><span class="num">③</span>批次建立賣場…py　<span class="floc" style="font-size:.8rem">Friday 批次主程式</span></h2>
+      <p class="lead muted">必修 3（Friday）：跳過已成功列 + 逐列存檔。</p>
+      <pre><span class="cmt"># 新增：強制重做開關</span>
+FORCE_REDO = os.getenv('FRIDAY_FORCE_REDO','') in ('1','true','yes')
+
+<span class="cmt"># 迴圈內新增：已成功就跳過，避免重複上架</span>
+if not FORCE_REDO and str(row.get('執行結果') or '').strip()=='成功':
+    print(f'第 {r} 列：執行結果=成功，跳過')
+    summary.append({'row':r,'status':'skipped'}); continue
+
+<span class="cmt"># 每列收尾新增：逐列存檔，中斷不丟結果</span>
+finally:
+    try: wb.save(EXCEL_PATH); save_cache(cache)
+    except Exception as se: print('⚠️ 逐列存檔失敗：', se)</pre>
+    </section>
+
+    <section>
+      <h2><span class="num">④</span>批次上架.py　<span class="floc" style="font-size:.8rem">Yahoo 批次主程式</span></h2>
+      <p class="lead muted">必修 3（Yahoo）：以 partNo 為 key 的本地帳本做冪等防護。</p>
+      <pre><span class="cmt"># 新增：帳本路徑 + 強制重做開關 + load/save 函式</span>
+LEDGER_PATH = os.path.join("logs", "yahoo_uploaded_ledger.json")
+FORCE_REDO  = os.getenv("YH_FORCE_REDO","") in ("1","true","yes")
+
+<span class="cmt"># 送出前新增：此 partNo 已成功過就跳過</span>
+if not FORCE_REDO and part_no_value in ledger:
+    print(f"⏭ 列 {r}：partNo={part_no_value} 帳本已記錄，跳過")
+    skipped += 1; continue
+
+<span class="cmt"># 成功(201)後新增：立刻寫入帳本並持久化</span>
+ledger[part_no_value] = {"proposalId": pid, "name": product.get("name"),
+                         "subStationId": sub_station_id, "ts": ...}
+save_ledger(ledger)</pre>
+    </section>
+
+    <section>
+      <h2><span class="num">✓</span>驗證</h2>
+      <div class="dirlist">
+$ python -m py_compile  <span style="color:var(--muted)"># 4 檔全數通過</span><br>
+&nbsp;&nbsp;Yahoo購物/sign_in.py<br>
+&nbsp;&nbsp;Yahoo購物/批次上架.py<br>
+&nbsp;&nbsp;Friday購物/friday_uploader/建立加贈賣場.py<br>
+&nbsp;&nbsp;Friday購物/friday_uploader/批次建立賣場_OD長圖切圖快取不重傳版.py<br>
+<span style="color:var(--green)">=== ALL COMPILE OK ===</span>
+      </div>
+      <p class="lead muted" style="margin-top:1rem">實機行為驗證（需連平台 + 圖片素材，請在作者本機跑）：#2 跑一次確認合圖、#3 同一份 Excel 跑兩次第二次應全跳過、#1 暫時移除 .env 應報錯。</p>
+    </section>
+
+  </div><!-- /pane-changes -->
 
   <footer>
     <span>華克電腦 · 內部技術稽核</span>
