@@ -239,8 +239,7 @@
 
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" aria-selected="true" data-pane="report">檢查報告</button>
-    <button class="tab" role="tab" aria-selected="false" data-pane="plan">修復清單<span class="badge">單人版</span></button>
-    <button class="tab" role="tab" aria-selected="false" data-pane="changes">變更明細<span class="badge">✓ 4 檔</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="plan">修復建議<span class="badge">單人版</span></button>
   </nav>
 
   <div id="pane-report" class="pane active">
@@ -410,26 +409,26 @@
     </div>
 
     <section style="margin-top:1.5rem">
-      <h2><span class="num">01</span>🔴 必修　<span style="font-size:.8rem;background:var(--green-bg);color:var(--green);padding:.2rem .7rem;border-radius:100px;font-family:'Noto Sans TC'">✅ 3/3 已完成 2026-06-11</span></h2>
-      <p class="lead muted">這三項即使一個人用、即使在自己電腦跑，也一樣會出事。已全部修好，4 檔 py_compile 通過。</p>
+      <h2><span class="num">01</span>🔴 必修</h2>
+      <p class="lead muted">這三項即使一個人用、即使在自己電腦跑，也一樣會出事。以下為建議改法，由作者本人修改。</p>
 
-      <div class="finding sev-good">
-        <div class="ftop"><span class="tag good">✅ 必修 1</span><span class="floc">sign_in.py:21–26</span></div>
+      <div class="finding sev-crit">
+        <div class="ftop"><span class="tag crit">必修 1</span><span class="floc">sign_in.py:21–26</span></div>
         <div class="ftitle">Yahoo 金鑰硬編在原始碼</div>
-        <p>已移除所有 <code>or "金鑰"</code> fallback，一律讀 .env、缺則報錯（訊息附 .env 路徑）。.env 已含全部 5 個 key，行為不變。<b>輪替</b>只在「確定曾外洩」才需要——請確認這支檔沒進過 git、沒同步到公開資料夾。</p>
+        <p>原始碼帶著鑰匙，只要這支檔被備份到雲端、隨手分享、或哪天同步到公開空間就外洩。<b>建議</b>：把 <code>os.getenv(...) or "金鑰"</code> 改成只讀 .env、缺則報錯，並確認 .env/.py 沒進過 git、沒同步到公開資料夾。</p>
+        <div class="action"><b>輪替</b>只在「確定曾外洩」時才需要——單人本機用威脅較低，先移除硬編 + 確認沒外流即可。</div>
       </div>
 
-      <div class="finding sev-good">
-        <div class="ftop"><span class="tag good">✅ 必修 2</span><span class="floc">建立加贈賣場.py:408–409</span></div>
+      <div class="finding sev-crit">
+        <div class="ftop"><span class="tag crit">必修 2</span><span class="floc">建立加贈賣場.py:408–409</span><span class="tag good">✓ 已驗證</span></div>
         <div class="ftitle">multipart 欄位名尾端空白 → 功能失效</div>
-        <p>已修：<code>"uploadFile  "</code>→<code>"uploadFile"</code>、<code>"combinePic "</code>→<code>"combinePic"</code>。建議跑一次加贈賣場確認合圖正常。</p>
+        <p>純功能 bug，與人數無關。<code>"uploadFile  "</code> / <code>"combinePic "</code> 帶空白，後端收不到，「不重傳圖/自動合圖」失效。<b>建議</b>：拿掉尾端空白即可。</p>
       </div>
 
-      <div class="finding sev-good">
-        <div class="ftop"><span class="tag good">✅ 必修 3</span><span class="floc">批次建立賣場 + 批次上架.py</span></div>
+      <div class="finding sev-crit">
+        <div class="ftop"><span class="tag crit">必修 3</span><span class="floc">批次建立賣場 / 批次上架.py</span></div>
         <div class="ftitle">無重複上架防護</div>
-        <p>已加冪等防護：<b>Friday</b> 跳過「執行結果=成功」列 + 逐列存檔（中斷不丟）；<b>Yahoo</b> 用 partNo 本地帳本 <code>logs/yahoo_uploaded_ledger.json</code>，成功即寫入、重跑自動跳過。要強制重做設 <code>FRIDAY_FORCE_REDO=1</code> / <code>YH_FORCE_REDO=1</code>。</p>
-        <div class="action"><b>驗證：</b>同一份 Excel 跑兩次，第二次應全部「已存在/略過」。</div>
+        <p><b>自己一個人重跑、或中途斷線後重跑，一樣會在後台產生重複商品。</b><b>建議</b>：送出前先查平台是否已存在，或回讀 Excel「執行結果=成功」欄跳過（Yahoo 沒回寫 Excel，可用 partNo 本地帳本記錄已成功者）。</p>
       </div>
     </section>
 
@@ -491,97 +490,14 @@
 
     <div class="next">
       <h2 style="margin-top:0"><span class="num" style="color:#f0c14b">05</span>下一步</h2>
-      <p style="opacity:.92">🔴 必修 3 項<b>已完成</b>（2026-06-11，py_compile 通過）。剩下：<br>
-      ① 建議 4~9（穩定性）要不要一起做？說一聲我就接著修。<br>
-      ② 確認 10（MSRP=售價+3000）合規性，再決定是否改回讀真實 MSRP。<br>
-      ③ 請您確認 Yahoo 那支檔/.env 沒進過 git、沒同步到公開空間（決定要不要輪替金鑰）。</p>
+      <p style="opacity:.92">這份是<b>建議</b>，程式由作者本人修改（不代改他人工具）。建議順序：<br>
+      ① 先處理 🔴 必修 3 項（金鑰 fallback / multipart 空白 / 重複上架防護）。<br>
+      ② 視情況再做建議 4~9（穩定性）。<br>
+      ③ 確認 10（MSRP=售價+3000）合規性。<br>
+      ④ 確認 Yahoo 那支檔/.env 沒進過 git、沒同步到公開空間（決定要不要輪替金鑰）。</p>
     </div>
 
   </div><!-- /pane-plan -->
-
-  <!-- ============ 變更明細分頁 ============ -->
-  <div id="pane-changes" class="pane">
-
-    <div class="callout">
-      <b>2026-06-11 已修改 4 個檔案</b>　修必修 3 項。檔案位於本機 <code>_tmp/自動上架專案/自動上架專案/</code>（非 git 管控）。下方為 before → after。為安全，金鑰值一律以 <code>***</code> 顯示。
-    </div>
-
-    <section style="margin-top:1.5rem">
-      <h2><span class="num">①</span>sign_in.py　<span class="floc" style="font-size:.8rem">Yahoo購物/sign_in.py</span></h2>
-      <p class="lead muted">必修 1：移除硬編金鑰 fallback，一律讀 .env、缺則報錯。</p>
-      <p style="font-size:.85rem;color:var(--red);font-weight:700;margin:.4rem 0">— 修改前</p>
-      <pre>TOKEN    = os.getenv("YH_TOKEN")    or "Supplier_****"
-KEYVALUE = os.getenv("YH_KEYVALUE") or "*** 硬編金鑰 ***"
-KEYIV    = os.getenv("YH_KEYIV")    or "*** 硬編金鑰 ***"
-SALTKEY  = os.getenv("YH_SALTKEY")  or "*** 硬編金鑰 ***"</pre>
-      <p style="font-size:.85rem;color:var(--green);font-weight:700;margin:.4rem 0">+ 修改後</p>
-      <pre>TOKEN    = os.getenv("YH_TOKEN")        <span class="cmt"># 不再內嵌金鑰</span>
-KEYVALUE = os.getenv("YH_KEYVALUE")
-KEYIV    = os.getenv("YH_KEYIV")
-SALTKEY  = os.getenv("YH_SALTKEY")
-<span class="cmt"># 缺 env 時 raise，並附 .env 路徑提示</span></pre>
-    </section>
-
-    <section>
-      <h2><span class="num">②</span>建立加贈賣場.py　<span class="floc" style="font-size:.8rem">:408–409</span></h2>
-      <p class="lead muted">必修 2：拿掉 multipart 欄位名尾端空白。</p>
-      <p style="font-size:.85rem;color:var(--red);font-weight:700;margin:.4rem 0">— 修改前</p>
-      <pre>"<span class="hl">uploadFile&nbsp;&nbsp;</span>": (None, "false"),
-"<span class="hl">combinePic&nbsp;</span>": (None, "true"),</pre>
-      <p style="font-size:.85rem;color:var(--green);font-weight:700;margin:.4rem 0">+ 修改後</p>
-      <pre>"<span class="hl">uploadFile</span>": (None, "false"),
-"<span class="hl">combinePic</span>": (None, "true"),</pre>
-    </section>
-
-    <section>
-      <h2><span class="num">③</span>批次建立賣場…py　<span class="floc" style="font-size:.8rem">Friday 批次主程式</span></h2>
-      <p class="lead muted">必修 3（Friday）：跳過已成功列 + 逐列存檔。</p>
-      <pre><span class="cmt"># 新增：強制重做開關</span>
-FORCE_REDO = os.getenv('FRIDAY_FORCE_REDO','') in ('1','true','yes')
-
-<span class="cmt"># 迴圈內新增：已成功就跳過，避免重複上架</span>
-if not FORCE_REDO and str(row.get('執行結果') or '').strip()=='成功':
-    print(f'第 {r} 列：執行結果=成功，跳過')
-    summary.append({'row':r,'status':'skipped'}); continue
-
-<span class="cmt"># 每列收尾新增：逐列存檔，中斷不丟結果</span>
-finally:
-    try: wb.save(EXCEL_PATH); save_cache(cache)
-    except Exception as se: print('⚠️ 逐列存檔失敗：', se)</pre>
-    </section>
-
-    <section>
-      <h2><span class="num">④</span>批次上架.py　<span class="floc" style="font-size:.8rem">Yahoo 批次主程式</span></h2>
-      <p class="lead muted">必修 3（Yahoo）：以 partNo 為 key 的本地帳本做冪等防護。</p>
-      <pre><span class="cmt"># 新增：帳本路徑 + 強制重做開關 + load/save 函式</span>
-LEDGER_PATH = os.path.join("logs", "yahoo_uploaded_ledger.json")
-FORCE_REDO  = os.getenv("YH_FORCE_REDO","") in ("1","true","yes")
-
-<span class="cmt"># 送出前新增：此 partNo 已成功過就跳過</span>
-if not FORCE_REDO and part_no_value in ledger:
-    print(f"⏭ 列 {r}：partNo={part_no_value} 帳本已記錄，跳過")
-    skipped += 1; continue
-
-<span class="cmt"># 成功(201)後新增：立刻寫入帳本並持久化</span>
-ledger[part_no_value] = {"proposalId": pid, "name": product.get("name"),
-                         "subStationId": sub_station_id, "ts": ...}
-save_ledger(ledger)</pre>
-    </section>
-
-    <section>
-      <h2><span class="num">✓</span>驗證</h2>
-      <div class="dirlist">
-$ python -m py_compile  <span style="color:var(--muted)"># 4 檔全數通過</span><br>
-&nbsp;&nbsp;Yahoo購物/sign_in.py<br>
-&nbsp;&nbsp;Yahoo購物/批次上架.py<br>
-&nbsp;&nbsp;Friday購物/friday_uploader/建立加贈賣場.py<br>
-&nbsp;&nbsp;Friday購物/friday_uploader/批次建立賣場_OD長圖切圖快取不重傳版.py<br>
-<span style="color:var(--green)">=== ALL COMPILE OK ===</span>
-      </div>
-      <p class="lead muted" style="margin-top:1rem">實機行為驗證（需連平台 + 圖片素材，請在作者本機跑）：#2 跑一次確認合圖、#3 同一份 Excel 跑兩次第二次應全跳過、#1 暫時移除 .env 應報錯。</p>
-    </section>
-
-  </div><!-- /pane-changes -->
 
   <footer>
     <span>華克電腦 · 內部技術稽核</span>
