@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自動上架專案 — 程式碼檢查報告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1a17;
+    --paper:#f4f1ea;
+    --paper-2:#fbf9f4;
+    --line:#d9d3c6;
+    --muted:#6b6357;
+    --red:#b3271e;
+    --red-bg:#fbeae8;
+    --amber:#a86412;
+    --amber-bg:#fbf1e0;
+    --yellow:#7d6a18;
+    --yellow-bg:#f7f1da;
+    --green:#3f6b3a;
+    --green-bg:#eaf2e6;
+    --accent:#1f4e5f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Noto Sans TC",-apple-system,sans-serif;
+    line-height:1.7;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+    padding:clamp(1rem,4vw,3.5rem) clamp(1rem,5vw,2rem);
+  }
+  .wrap{max-width:880px;margin:0 auto}
+
+  /* ---- Masthead ---- */
+  .masthead{
+    border-bottom:3px solid var(--ink);
+    padding-bottom:1.4rem;
+    margin-bottom:2.5rem;
+  }
+  .kicker{
+    font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;
+  }
+  h1{
+    font-family:"Noto Serif TC",serif;
+    font-weight:900;
+    font-size:clamp(2rem,6.5vw,3.4rem);
+    line-height:1.08;
+    margin:.7rem 0 .5rem;
+    letter-spacing:-.01em;
+  }
+  .dek{font-size:1.02rem;color:var(--muted);max-width:46ch}
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:1.2rem;
+    font-size:.82rem;color:var(--muted);
+  }
+  .meta-row b{color:var(--ink);font-weight:700}
+
+  /* ---- Verdict banner ---- */
+  .verdict{
+    background:var(--ink);color:var(--paper-2);
+    border-radius:2px;padding:1.6rem 1.5rem;margin:2.5rem 0;
+    display:grid;grid-template-columns:auto 1fr;gap:1.4rem;align-items:center;
+  }
+  .score-badge{
+    font-family:"Noto Serif TC",serif;font-weight:900;
+    font-size:2.4rem;line-height:1;text-align:center;
+    border:2px solid rgba(244,241,234,.35);border-radius:50%;
+    width:92px;height:92px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+  }
+  .score-badge small{font-size:.62rem;letter-spacing:.18em;font-weight:400;
+    font-family:"Noto Sans TC";opacity:.7;margin-top:.2rem}
+  .verdict p{font-size:.96rem;opacity:.92}
+  .verdict strong{color:#f0c14b}
+
+  /* ---- Section ---- */
+  section{margin:3rem 0}
+  h2{
+    font-family:"Noto Serif TC",serif;font-weight:900;
+    font-size:clamp(1.4rem,4vw,2rem);
+    display:flex;align-items:baseline;gap:.6rem;
+    border-bottom:1px solid var(--line);padding-bottom:.5rem;margin-bottom:1.4rem;
+  }
+  h2 .num{font-size:.85rem;color:var(--accent);font-family:"JetBrains Mono";font-weight:600}
+  .lead{font-size:1.05rem;color:var(--ink);margin-bottom:1.4rem}
+  .lead.muted{color:var(--muted)}
+
+  /* ---- Module table ---- */
+  .modtable{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.92rem}
+  .modtable th,.modtable td{text-align:left;padding:.85rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
+  .modtable th{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .modtable .mod{font-weight:700;white-space:nowrap}
+  .modtable .sc{font-family:"JetBrains Mono";font-weight:600;white-space:nowrap}
+  .bar{display:inline-block;height:7px;border-radius:4px;background:var(--accent);vertical-align:middle;margin-left:.4rem}
+
+  /* ---- Finding cards ---- */
+  .finding{
+    background:var(--paper-2);border:1px solid var(--line);border-left-width:5px;
+    border-radius:3px;padding:1.1rem 1.2rem;margin:1rem 0;
+  }
+  .finding.sev-crit{border-left-color:var(--red)}
+  .finding.sev-mid{border-left-color:var(--amber)}
+  .finding.sev-low{border-left-color:var(--yellow)}
+  .finding.sev-good{border-left-color:var(--green)}
+  .ftop{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-bottom:.5rem}
+  .tag{
+    font-size:.68rem;font-weight:700;letter-spacing:.08em;
+    padding:.18rem .6rem;border-radius:100px;white-space:nowrap;
+  }
+  .tag.crit{background:var(--red-bg);color:var(--red)}
+  .tag.mid{background:var(--amber-bg);color:var(--amber)}
+  .tag.low{background:var(--yellow-bg);color:var(--yellow)}
+  .tag.good{background:var(--green-bg);color:var(--green)}
+  .floc{font-family:"JetBrains Mono";font-size:.78rem;color:var(--muted)}
+  .ftitle{font-weight:700;font-size:1.02rem}
+  .finding p{font-size:.92rem;color:#39342c;margin-top:.3rem}
+  .finding .action{margin-top:.6rem;font-size:.88rem;background:rgba(31,78,95,.07);
+    border-radius:3px;padding:.5rem .7rem;color:var(--accent)}
+  .finding .action b{color:var(--accent)}
+  pre{
+    background:#211f1b;color:#e8e2d6;border-radius:4px;
+    padding:.8rem 1rem;margin:.6rem 0;overflow-x:auto;
+    font-family:"JetBrains Mono";font-size:.8rem;line-height:1.55;
+  }
+  pre .cmt{color:#8a8275}
+  pre .hl{color:#f0a14b}
+
+  /* ---- Common issues ---- */
+  .issue{display:grid;grid-template-columns:2.2rem 1fr;gap:.9rem;padding:1rem 0;border-bottom:1px solid var(--line)}
+  .issue .letter{font-family:"Noto Serif TC";font-weight:900;font-size:1.8rem;color:var(--accent);line-height:1}
+  .issue h3{font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
+  .issue p{font-size:.92rem;color:#39342c}
+
+  /* ---- Actions list ---- */
+  .acts{counter-reset:a;list-style:none}
+  .acts li{
+    counter-increment:a;position:relative;padding:.9rem 0 .9rem 3rem;
+    border-bottom:1px solid var(--line);font-size:.96rem;
+  }
+  .acts li::before{
+    content:counter(a);position:absolute;left:0;top:.85rem;
+    width:2rem;height:2rem;border-radius:50%;background:var(--ink);color:var(--paper-2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"JetBrains Mono";font-weight:600;font-size:.85rem;
+  }
+  .acts li b{font-weight:700}
+
+  /* ---- Next step ---- */
+  .next{background:var(--accent);color:#f1f5f4;border-radius:3px;padding:1.5rem;margin-top:1.5rem}
+  .next h2{color:#fff;border-color:rgba(255,255,255,.2)}
+  .next .opt{display:flex;gap:.8rem;padding:.7rem 0;align-items:flex-start}
+  .next .opt span{font-family:"JetBrains Mono";font-weight:600;opacity:.7}
+  .next a{color:#f0c14b}
+
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--line);
+    font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+
+  /* ---- Tabs ---- */
+  .tabs{display:flex;gap:.4rem;margin:2rem 0 .5rem;border-bottom:2px solid var(--line)}
+  .tab{
+    appearance:none;border:none;background:none;cursor:pointer;
+    font-family:"Noto Serif TC",serif;font-weight:700;font-size:1rem;
+    color:var(--muted);padding:.7rem 1.1rem;position:relative;
+    border-radius:3px 3px 0 0;transition:color .2s;
+  }
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{color:var(--ink)}
+  .tab[aria-selected="true"]::after{
+    content:"";position:absolute;left:0;right:0;bottom:-2px;height:3px;background:var(--ink);
+  }
+  .tab .badge{font-family:"JetBrains Mono";font-size:.7rem;font-weight:600;
+    background:var(--accent);color:#f1f5f4;border-radius:100px;padding:.05rem .45rem;margin-left:.4rem;vertical-align:middle}
+  .pane{display:none}
+  .pane.active{display:block;animation:fade .3s ease-out}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ---- Plan-specific ---- */
+  .roadmap{margin:1.4rem 0}
+  .ph{
+    display:grid;grid-template-columns:auto 1fr;gap:1.1rem;
+    padding:1.1rem 0;border-bottom:1px solid var(--line);
+  }
+  .ph .pnum{
+    font-family:"JetBrains Mono";font-weight:600;font-size:.78rem;
+    background:var(--ink);color:var(--paper-2);border-radius:3px;
+    padding:.35rem .55rem;height:fit-content;white-space:nowrap;text-align:center;
+  }
+  .ph.crit .pnum{background:var(--red)}
+  .ph h3{font-family:"Noto Serif TC";font-size:1.12rem;font-weight:700;margin-bottom:.2rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline}
+  .ph h3 .est{font-family:"JetBrains Mono";font-size:.72rem;font-weight:400;color:var(--muted)}
+  .ph ul{margin:.5rem 0 0 1.1rem;font-size:.9rem;color:#39342c}
+  .ph ul li{margin:.2rem 0}
+  .ph .gate{font-size:.8rem;color:var(--accent);margin-top:.45rem;font-weight:600}
+  .deck{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.8rem;margin:1.2rem 0}
+  .dcard{background:var(--paper-2);border:1px solid var(--line);border-radius:3px;padding:1rem}
+  .dcard .q{font-weight:700;font-size:.98rem;margin-bottom:.4rem}
+  .dcard .why{font-size:.82rem;color:var(--muted)}
+  .dirlist{font-family:"JetBrains Mono";font-size:.82rem;background:var(--paper-2);border:1px solid var(--line);
+    border-radius:3px;padding:1rem 1.2rem;line-height:1.9;color:#39342c}
+  .dirlist a{color:var(--accent);text-decoration:none;font-weight:600}
+  .callout{background:var(--green-bg);border-left:4px solid var(--green);border-radius:3px;padding:1rem 1.1rem;margin:1.2rem 0;font-size:.92rem}
+  .callout b{color:var(--green)}
+
+  @media print{
+    .tabs{display:none}
+    .pane{display:block!important}
+    body{background:#fff;padding:0;font-size:12px}
+    .finding,.verdict,.next{break-inside:avoid}
+    a{color:inherit;text-decoration:none}
+  }
+  @media (max-width:560px){
+    .verdict{grid-template-columns:1fr;text-align:center}
+    .score-badge{margin:0 auto}
+    .modtable .bar{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span>內部技術稽核 · INTERNAL CODE AUDIT</span><span>2026-06-11</span></div>
+    <h1>自動上架專案<br>程式碼檢查報告</h1>
+    <p class="dek">電商部門同仁逆向各平台後台 API 拼出的批次上架工具。能跑、有產出，但安全與工程衛生有需立刻處理的問題。</p>
+    <div class="meta-row">
+      <span><b>位置</b>　_tmp/自動上架專案/</span>
+      <span><b>規模</b>　3 模組 · ~28 支 Python · ~7,800 行</span>
+      <span><b>性質</b>　非官方授權流程 · 非 git 管控</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-pane="report">檢查報告</button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="plan">修復清單<span class="badge">單人版</span></button>
+  </nav>
+
+  <div id="pane-report" class="pane active">
+
+  <div class="verdict">
+    <div class="score-badge">4.5<small>10 分</small></div>
+    <div>
+      <p>作為「會跑、有產出的內部 PoC」<strong>合格</strong>——作者對各平台 API 的實戰細節打磨得很細。但作為「要長期維護、會真的改動正式後台」的工具，<strong>工程衛生不及格</strong>：有 2 個必須立刻處理的安全問題，以及全模組共通的 3 個結構性硬傷。</p>
+    </div>
+  </div>
+
+  <!-- ===== 模組總覽 ===== -->
+  <section>
+    <h2><span class="num">01</span>模組總覽</h2>
+    <table class="modtable">
+      <thead><tr><th>模組</th><th>用途</th><th>分數</th><th>一句話</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mod">Friday 購物</td>
+          <td>批次建賣場 / 改商品 / 加贈</td>
+          <td class="sc">5.0<span class="bar" style="width:50px"></span></td>
+          <td>能跑、註解用心，但無共用層、冪等性弱、認證脆弱</td>
+        </tr>
+        <tr>
+          <td class="mod">Yahoo 購物</td>
+          <td>批次上架 / 屬性維護</td>
+          <td class="sc">3.5<span class="bar" style="width:35px;background:var(--red)"></span></td>
+          <td>⚠ 加密金鑰硬編在原始碼＋簽章疑似錯誤靠暴力試</td>
+        </tr>
+        <tr>
+          <td class="mod">抓網頁圖片</td>
+          <td>momo / PChome / Yahoo 抓圖</td>
+          <td class="sc">6.0<span class="bar" style="width:60px;background:var(--green)"></span></td>
+          <td>踩坑邏輯到位，但兩版本命名誤導、SSL 全關、JPEG 灌垃圾湊大小</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== 必須立刻處理 ===== -->
+  <section>
+    <h2><span class="num">02</span>🔴 必須立刻處理（安全）</h2>
+
+    <div class="finding sev-crit">
+      <div class="ftop">
+        <span class="tag crit">嚴重</span>
+        <span class="floc">Yahoo購物/sign_in.py:21–26</span>
+        <span class="tag good">✓ 已親自驗證</span>
+      </div>
+      <div class="ftitle">Yahoo AES 金鑰 / 簽章 salt 硬編在原始碼</div>
+      <pre><span class="hl">KEYVALUE</span> = os.getenv("YH_KEYVALUE") <span class="hl">or "************ 已遮罩 ************"</span>
+<span class="hl">KEYIV</span>    = os.getenv("YH_KEYIV")    <span class="hl">or "******** 已遮罩 ********"</span>
+<span class="hl">SALTKEY</span>  = os.getenv("YH_SALTKEY")  <span class="hl">or "************ 已遮罩 ************"</span></pre>
+      <p>這組 AES 金鑰 + HMAC salt + token 是 <b>Yahoo 供應商身分的完整鑰匙</b>，等同「上架／改價／改商品」的後台權限。任何拿到這支 .py 的人（外包、離職員工、若曾上傳 git）都能偽造身分。而第 28 行「缺金鑰就報錯」的保護因為有 <code>or "硬編值"</code> <b>永遠不會觸發</b>，等於 .env 形同虛設。硬編這組與 .env 內實際那組<b>不一樣</b>，疑似舊金鑰，更該確認是否已外流。</p>
+      <div class="action"><b>動作：</b>① 向 Yahoo 申請輪替（rotate）金鑰；② 移除所有 <code>or "..."</code> fallback，缺 env 直接報錯；③ 確認此檔從未進過 git。</div>
+    </div>
+
+    <div class="finding sev-crit">
+      <div class="ftop">
+        <span class="tag crit">嚴重</span>
+        <span class="floc">Yahoo購物/sign_in.py:114–117, 209–259</span>
+      </div>
+      <div class="ftitle">簽章疑似用錯 key，靠暴力試 KeyVersion 1~5 遮掩</div>
+      <p>HMAC 的 key 傳的是 AES 金鑰的 base64 字串，salt key 卻被當訊息串進去——很可能不符 Yahoo 規格。程式之所以要「自動試 5 個 KeyVersion」，很可能就是簽章本身不確定對不對。正確簽章不需要猜。</p>
+      <div class="action"><b>動作：</b>對照 Yahoo 官方文件確認簽章規格，修對後拿掉暴力迴圈。</div>
+    </div>
+  </section>
+
+  <!-- ===== 結構性問題 ===== -->
+  <section>
+    <h2><span class="num">03</span>🟠 全模組共通的 3 個結構性問題</h2>
+
+    <div class="issue">
+      <div class="letter">A</div>
+      <div>
+        <h3>寫死特定同仁的個人 OneDrive 路徑</h3>
+        <p><code>C:\Users\ch976\OneDrive\Desktop\Anson\上架素材</code>（三個模組都有）。換人、換機就全掛，可攜性為零、無法交接。應移到 .env（Friday 的 config.py 其實已預留 IMAGE_ROOT 卻沒人用）。</p>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="letter">B</div>
+      <div>
+        <h3>無「重複上架防護」（冪等性）</h3>
+        <p>這是批次上架工具最該有、卻三個模組都缺的。失敗後重跑整份 Excel，會把<b>已成功的列再次送出</b>，在後台造成重複商品／重複提案。沒有去重、沒有斷點續傳，Excel 也是全部跑完才一次存檔（中途崩潰結果全失）。</p>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="letter">C</div>
+      <div>
+        <h3>大量重複碼 + 一次性測試腳本散落</h3>
+        <p>同樣的 <code>api_get</code> / <code>headers</code> / <code>normalize</code> / <code>upload</code> 在 8+ 支檔案各抄一份，細節還已分歧（reqid 兩種算法、圖片快取 3 種策略、SSD 正規化 3 支不一致）。Yahoo 那邊還有一堆寫死「單一台 ASUS FA707NUG」的探針腳本混在正式工具裡。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 其他 bug ===== -->
+  <section>
+    <h2><span class="num">04</span>🟡 其他重點 Bug</h2>
+
+    <div class="finding sev-mid">
+      <div class="ftop"><span class="tag mid">中</span><span class="floc">Friday/建立加贈賣場.py:408–409</span><span class="tag good">✓ 已驗證</span></div>
+      <div class="ftitle">multipart 欄位名帶尾端空白 → 參數失效</div>
+      <pre>"<span class="hl">uploadFile&nbsp;&nbsp;</span>": (None, "false"),   <span class="cmt"># 2 個尾端空格</span>
+"<span class="hl">combinePic&nbsp;</span>": (None, "true"),    <span class="cmt"># 1 個尾端空格</span></pre>
+      <p>幾乎肯定是筆誤，後端收不到正確參數，「不重傳圖／自動合圖」控制<b>失效</b>。</p>
+    </div>
+
+    <div class="finding sev-mid">
+      <div class="ftop"><span class="tag mid">中</span><span class="floc">Yahoo/批次上架.py:1150</span></div>
+      <div class="ftitle">MSRP 一律寫死「售價 + 3000」當原價</div>
+      <p>不論商品實際建議售價，一律 <code>售價+3000</code> 製造折扣假象 → 可能觸犯<b>不實標價／公平交易法</b>。請業務確認合規。</p>
+    </div>
+
+    <div class="finding sev-mid">
+      <div class="ftop"><span class="tag mid">中</span><span class="floc">Friday/修改商品.py:654</span></div>
+      <div class="ftitle">售價填非法值時靜默沿用舊價</div>
+      <p>使用者以為改了其實沒改，無任何警告。</p>
+    </div>
+
+    <div class="finding sev-mid">
+      <div class="ftop"><span class="tag mid">中</span><span class="floc">抓圖/2.0.py:115</span></div>
+      <div class="ftitle">為湊滿 40KB 在 JPEG 檔尾灌垃圾 bytes</div>
+      <p>非合法 segment，嚴格解碼器／平台驗圖可能判損毀。</p>
+    </div>
+
+    <div class="finding sev-mid">
+      <div class="ftop"><span class="tag mid">中</span><span class="floc">抓圖/2.0.py:73–75</span></div>
+      <div class="ftitle">SSL 無條件 verify=False，對所有來源關閉憑證驗證</div>
+      <p>易被中間人換圖。應比照 v1 的「先試後降級」。</p>
+    </div>
+
+    <div class="finding sev-low">
+      <div class="ftop"><span class="tag low">輕</span><span class="floc">抓網頁圖片2.0.py</span></div>
+      <div class="ftitle">「2.0」其實是功能退化版</div>
+      <p>少了平台白名單、SSL 智慧降級、curl fallback。命名誤導會讓人誤用。</p>
+    </div>
+  </section>
+
+  <!-- ===== 建議 ===== -->
+  <section>
+    <h2><span class="num">05</span>給您的建議（決策層面）</h2>
+    <ol class="acts">
+      <li><b>這工具要正式化還是維持 PoC？</b>若要長期用，請排一次重構：抽共用模組、路徑進設定、檔名改英文、移出 <code>_tmp/</code>。</li>
+      <li><b>安全兩項（金鑰輪替 + 簽章）建議本週就處理</b>，不分要不要重構——金鑰外流風險不會等。</li>
+      <li><b>冪等性是上線前底線</b>：跑批前先查「這筆是否已上架」，否則哪天中途斷線會在正式商城產生一堆重複商品。</li>
+      <li><b>著作權提醒</b>：抓圖工具會抓 momo／PChome／Yahoo 的商品圖，原廠授權圖與平台自製圖可用範圍不同，需業務端把關。</li>
+    </ol>
+  </section>
+
+  <!-- ===== 下一步 ===== -->
+  <div class="next">
+    <h2 style="margin-top:0"><span class="num" style="color:#f0c14b">06</span>我可以接著做</h2>
+    <div class="opt"><span>A →</span><div>直接幫同仁修掉 <b>Friday multipart bug</b> + <b>Yahoo 硬編金鑰</b>（小修，當天可完成）</div></div>
+    <div class="opt"><span>B →</span><div>開一份重構規劃書（<code>_projects/</code>），排整個共用層重構</div></div>
+    <p style="margin-top:.8rem;opacity:.85;font-size:.9rem">告訴我走哪個就行。</p>
+  </div>
+
+  </div><!-- /pane-report -->
+
+  <!-- ============ 修復清單分頁（單人自用版） ============ -->
+  <div id="pane-plan" class="pane">
+
+    <div class="callout">
+      <b>範圍已收斂（單人自用）</b>　此工具只有作者本人使用，不需多人共用/交接。<b>砍掉</b>共用層重構、檔名英文化、路徑設定化、搬遷、文件等可維護性工作，<b>只保留資安 + 真的會出錯的 BUG</b>。
+    </div>
+
+    <section style="margin-top:1.5rem">
+      <h2><span class="num">01</span>🔴 必修　<span style="font-size:.8rem;background:var(--green-bg);color:var(--green);padding:.2rem .7rem;border-radius:100px;font-family:'Noto Sans TC'">✅ 3/3 已完成 2026-06-11</span></h2>
+      <p class="lead muted">這三項即使一個人用、即使在自己電腦跑，也一樣會出事。已全部修好，4 檔 py_compile 通過。</p>
+
+      <div class="finding sev-good">
+        <div class="ftop"><span class="tag good">✅ 必修 1</span><span class="floc">sign_in.py:21–26</span></div>
+        <div class="ftitle">Yahoo 金鑰硬編在原始碼</div>
+        <p>已移除所有 <code>or "金鑰"</code> fallback，一律讀 .env、缺則報錯（訊息附 .env 路徑）。.env 已含全部 5 個 key，行為不變。<b>輪替</b>只在「確定曾外洩」才需要——請確認這支檔沒進過 git、沒同步到公開資料夾。</p>
+      </div>
+
+      <div class="finding sev-good">
+        <div class="ftop"><span class="tag good">✅ 必修 2</span><span class="floc">建立加贈賣場.py:408–409</span></div>
+        <div class="ftitle">multipart 欄位名尾端空白 → 功能失效</div>
+        <p>已修：<code>"uploadFile  "</code>→<code>"uploadFile"</code>、<code>"combinePic "</code>→<code>"combinePic"</code>。建議跑一次加贈賣場確認合圖正常。</p>
+      </div>
+
+      <div class="finding sev-good">
+        <div class="ftop"><span class="tag good">✅ 必修 3</span><span class="floc">批次建立賣場 + 批次上架.py</span></div>
+        <div class="ftitle">無重複上架防護</div>
+        <p>已加冪等防護：<b>Friday</b> 跳過「執行結果=成功」列 + 逐列存檔（中斷不丟）；<b>Yahoo</b> 用 partNo 本地帳本 <code>logs/yahoo_uploaded_ledger.json</code>，成功即寫入、重跑自動跳過。要強制重做設 <code>FRIDAY_FORCE_REDO=1</code> / <code>YH_FORCE_REDO=1</code>。</p>
+        <div class="action"><b>驗證：</b>同一份 Excel 跑兩次，第二次應全部「已存在/略過」。</div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">02</span>🟡 建議（穩定性，少踩坑）</h2>
+
+      <div class="finding sev-mid">
+        <div class="ftop"><span class="tag mid">建議 4</span><span class="floc">多檔</span></div>
+        <div class="ftitle">跑完才存檔，崩潰全失</div>
+        <p>改逐筆 / 每 N 筆 flush + try/finally，中途 Ctrl+C 不丟已成功結果（也呼應必修 3）。</p>
+      </div>
+      <div class="finding sev-mid">
+        <div class="ftop"><span class="tag mid">建議 5</span><span class="floc">一鍵草稿改上架.py 等</span></div>
+        <div class="ftitle">token 過期無偵測</div>
+        <p>連續 401/403 即中止提示「請重跑更新 TOKEN」，不要默默跑完整批白工。</p>
+      </div>
+      <div class="finding sev-mid">
+        <div class="ftop"><span class="tag mid">建議 6</span><span class="floc">修改商品.py:654</span></div>
+        <div class="ftitle">售價非法值靜默沿用舊價</div>
+        <p>填錯值時不報錯、以為改了其實沒改。應 raise 或警告。</p>
+      </div>
+      <div class="finding sev-mid">
+        <div class="ftop"><span class="tag mid">建議 7</span><span class="floc">抓圖 2.0.py:115</span></div>
+        <div class="ftitle">JPEG 灌垃圾湊 40KB</div>
+        <p>非合法 segment，平台驗圖可能判損毀。改提高 quality / 存 PNG / 寫合法 COM segment。</p>
+      </div>
+      <div class="finding sev-mid">
+        <div class="ftop"><span class="tag mid">建議 8</span><span class="floc">抓圖 2.0.py:73–75</span></div>
+        <div class="ftitle">SSL 無條件 verify=False</div>
+        <p>對所有來源關閉憑證驗證，易被換圖。改比照 v1「先試後降級」。</p>
+      </div>
+      <div class="finding sev-low">
+        <div class="ftop"><span class="tag low">建議 9</span><span class="floc">sign_in.py:209–259</span></div>
+        <div class="ftitle">Yahoo 簽章靠暴力試 KeyVersion 1~5</div>
+        <p>若現在能正常上架就低優先（純 code smell）；若偶爾簽不過，對照官方文件修對後拿掉迴圈。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">03</span>🟦 需您 / 業務確認</h2>
+      <div class="finding sev-mid">
+        <div class="ftop"><span class="tag mid">確認 10</span><span class="floc">批次上架.py:1150</span></div>
+        <div class="ftitle">MSRP = 售價 + 3000（造原價）</div>
+        <p>與人數無關。製造折扣假象，可能觸不實標價 / 公平交易法。決定是否改回讀真實 MSRP。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">04</span>❌ 不做（因單人自用）</h2>
+      <div class="dirlist">
+✗ 抽共用層（friday_common / yahoo_api / normalize）<br>
+✗ 寫死個人 OneDrive 路徑改進 .env　<span style="color:var(--muted)"># 就是作者本機，無妨</span><br>
+✗ 中文檔名改英文<br>
+✗ 移出 _tmp / 進 git / 補 CONTEXT.md / 著作權文件<br>
+✗ 兩版抓圖合併（除非作者覺得困擾）
+      </div>
+      <p class="lead muted" style="margin-top:1rem">以上是「多人維護/交接」才划算的衛生工作。日後若要給別人用，再開回來即可。完整清單見 <code>_projects/auto-listing-refactor/fix-list.md</code>。</p>
+    </section>
+
+    <div class="next">
+      <h2 style="margin-top:0"><span class="num" style="color:#f0c14b">05</span>下一步</h2>
+      <p style="opacity:.92">🔴 必修 3 項<b>已完成</b>（2026-06-11，py_compile 通過）。剩下：<br>
+      ① 建議 4~9（穩定性）要不要一起做？說一聲我就接著修。<br>
+      ② 確認 10（MSRP=售價+3000）合規性，再決定是否改回讀真實 MSRP。<br>
+      ③ 請您確認 Yahoo 那支檔/.env 沒進過 git、沒同步到公開空間（決定要不要輪替金鑰）。</p>
+    </div>
+
+  </div><!-- /pane-plan -->
+
+  <footer>
+    <span>華克電腦 · 內部技術稽核</span>
+    <span>產出 2026-06-11 · 金鑰片段已遮罩 · 未列入公開目錄</span>
+  </footer>
+
+</div>
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.setAttribute('aria-selected', x === t));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('pane-' + t.dataset.pane).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }));
+</script>
+</body>
+</html>
